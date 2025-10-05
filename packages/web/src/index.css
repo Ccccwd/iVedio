@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-gray-700;
+  }
+  
+  body {
+    @apply bg-background text-white antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-background-card rounded-lg overflow-hidden transition-transform hover:scale-105;
+  }
+  
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-dark text-white font-medium px-6 py-2 rounded-full transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-background-hover hover:bg-gray-700 text-white font-medium px-6 py-2 rounded-full transition-colors;
+  }
+}

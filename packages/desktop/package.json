@@ -1,0 +1,19 @@
+{
+  "name": "video-platform-desktop",
+  "version": "1.0.0",
+  "description": "Video Platform Desktop App",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "dev": "npm run build:main && electron .",
+    "build": "npm run build:main",
+    "build:main": "tsc -p tsconfig.main.json",
+    "start:electron": "electron .",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "electron": "^28.1.4",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  }
+}

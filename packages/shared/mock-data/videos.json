@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "title": "Big Buck Bunny - 开源动画短片",
+    "description": "这是一部由Blender Foundation制作的开源动画短片。讲述了一只大兔子和森林里小动物们的有趣故事。这部短片展示了Blender强大的3D动画制作能力。",
+    "thumbnail": "https://i.imgur.com/7D3EqXP.jpg",
+    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    "duration": 596,
+    "views": 1250000,
+    "uploadDate": "2024-01-15",
+    "category": "动画",
+    "tags": ["动画", "短片", "开源"]
+  },
+  {
+    "id": "2",
+    "title": "Elephant Dream - 奇幻冒险",
+    "description": "世界上第一部使用开源软件制作的动画电影。讲述了两个角色在一个奇幻世界中的冒险故事,充满了想象力和创意。",
+    "thumbnail": "https://i.imgur.com/VYKQkQs.jpg",
+    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    "duration": 653,
+    "views": 890000,
+    "uploadDate": "2024-01-20",
+    "category": "动画",
+    "tags": ["动画", "奇幻", "冒险"]
+  },
+  {
+    "id": "3",
+    "title": "Sintel - 史诗短片",
+    "description": "一部感人至深的开源动画短片。讲述了一位女战士寻找她失去的龙伙伴的故事,画面精美,情节动人。",
+    "thumbnail": "https://i.imgur.com/qxNmMKr.jpg",
+    "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+    "duration": 888,
+    "views": 2100000,
+    "uploadDate": "2024-02-01",
+    "category": "动画",
+    "tags": ["动画", "冒险", "史诗"]
+  }
+]
