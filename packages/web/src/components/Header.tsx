@@ -9,7 +9,7 @@ function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition">
             <Play className="w-8 h-8 text-primary" fill="currentColor" />
-            <span className="text-xl font-bold text-white">视频平台</span>
+            <span className="text-xl font-bold text-white">iVedio</span>
           </Link>
 
           {/* Navigation */}
