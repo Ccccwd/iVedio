@@ -87,6 +87,7 @@ function DetailPage() {
         <VideoPlayer
           src={video.videoUrl}
           poster={video.thumbnail}
+          videoId={video.id}
         />
       </div>
 

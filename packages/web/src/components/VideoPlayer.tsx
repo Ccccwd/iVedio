@@ -3,13 +3,61 @@ import { useEffect, useRef, useState } from 'react'
 interface VideoPlayerProps {
   src: string
   poster?: string
+  videoId?: string
   onReady?: (player: any) => void
 }
 
-function VideoPlayer({ src, poster, onReady }: VideoPlayerProps) {
+function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const saveProgressTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // 保存观看进度
+  const saveProgress = async (currentTime: number, duration: number) => {
+    const userData = localStorage.getItem('userData')
+    if (!userData || !videoId) return
+
+    const user = JSON.parse(userData)
+    
+    try {
+      await fetch(`http://localhost:3001/api/videos/${videoId}/progress`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          progress: Math.floor(currentTime),
+          duration: Math.floor(duration)
+        }),
+      })
+    } catch (error) {
+      console.error('保存观看进度失败:', error)
+    }
+  }
+
+  // 加载用户观看进度
+  const loadProgress = async () => {
+    const userData = localStorage.getItem('userData')
+    if (!userData || !videoId) return
+
+    const user = JSON.parse(userData)
+    
+    try {
+      const response = await fetch(`http://localhost:3001/api/videos/${videoId}/progress/${user.id}`)
+      const result = await response.json()
+      
+      if (result.success && result.data.progress > 0 && videoRef.current) {
+        // 如果有观看进度且未看完，从上次位置开始播放
+        if (!result.data.completed && result.data.progress > 30) { // 30秒以上才恢复进度
+          videoRef.current.currentTime = result.data.progress
+        }
+      }
+    } catch (error) {
+      console.error('加载观看进度失败:', error)
+    }
+  }
 
   useEffect(() => {
     const video = videoRef.current
@@ -27,6 +75,22 @@ function VideoPlayer({ src, poster, onReady }: VideoPlayerProps) {
       if (onReady) {
         onReady(video)
       }
+      // 加载用户观看进度
+      loadProgress()
+    }
+
+    const handleTimeUpdate = () => {
+      if (!video.duration || !videoId) return
+      
+      // 清除之前的定时器
+      if (saveProgressTimeoutRef.current) {
+        clearTimeout(saveProgressTimeoutRef.current)
+      }
+      
+      // 延迟保存进度，避免频繁请求
+      saveProgressTimeoutRef.current = setTimeout(() => {
+        saveProgress(video.currentTime, video.duration)
+      }, 5000) // 5秒后保存
     }
 
     const handleError = (e: Event) => {
@@ -63,9 +127,18 @@ function VideoPlayer({ src, poster, onReady }: VideoPlayerProps) {
       setIsLoading(false)
     }
 
+    const handleEnded = () => {
+      // 视频播放结束，保存完成状态
+      if (video.duration && videoId) {
+        saveProgress(video.duration, video.duration)
+      }
+    }
+
     // 添加事件监听器
     video.addEventListener('loadstart', handleLoadStart)
     video.addEventListener('canplay', handleCanPlay)
+    video.addEventListener('timeupdate', handleTimeUpdate)
+    video.addEventListener('ended', handleEnded)
     video.addEventListener('error', handleError)
     video.addEventListener('loadedmetadata', handleLoadedMetadata)
     video.addEventListener('loadeddata', handleLoadedData)
@@ -76,13 +149,18 @@ function VideoPlayer({ src, poster, onReady }: VideoPlayerProps) {
 
     // 清理函数
     return () => {
+      if (saveProgressTimeoutRef.current) {
+        clearTimeout(saveProgressTimeoutRef.current)
+      }
       video.removeEventListener('loadstart', handleLoadStart)
       video.removeEventListener('canplay', handleCanPlay)
+      video.removeEventListener('timeupdate', handleTimeUpdate)
+      video.removeEventListener('ended', handleEnded)
       video.removeEventListener('error', handleError)
       video.removeEventListener('loadedmetadata', handleLoadedMetadata)
       video.removeEventListener('loadeddata', handleLoadedData)
     }
-  }, [src, onReady])
+  }, [src, onReady, videoId])
 
   return (
     <div className="relative rounded-lg overflow-hidden bg-black">
