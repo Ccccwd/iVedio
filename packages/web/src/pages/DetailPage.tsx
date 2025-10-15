@@ -4,7 +4,6 @@ import { ArrowLeft, Calendar, Eye, Tag } from 'lucide-react'
 import VideoPlayer from '../components/VideoPlayer'
 import VideoCard from '../components/VideoCard'
 import type { Video } from '@shared/types'
-import videosData from '@shared/mock-data/videos.json'
 
 function DetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -12,22 +11,63 @@ function DetailPage() {
   const [video, setVideo] = useState<Video | null>(null)
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // 模拟加载视频数据
-    setTimeout(() => {
-      const foundVideo = (videosData as Video[]).find(v => v.id === id)
-      if (foundVideo) {
-        setVideo(foundVideo)
-        
-        // 获取相关视频(同分类,排除当前视频)
-        const related = (videosData as Video[])
-          .filter(v => v.category === foundVideo.category && v.id !== id)
-          .slice(0, 4)
-        setRelatedVideos(related)
+    const fetchVideoData = async () => {
+      if (!id) {
+        setError('视频ID无效')
+        setLoading(false)
+        return
       }
-      setLoading(false)
-    }, 500)
+
+      try {
+        setLoading(true)
+        setError(null)
+
+        console.log('获取视频详情，ID:', id)
+
+        // 获取指定视频详情
+        const videoResponse = await fetch(`http://localhost:3001/api/videos/${id}`)
+        
+        if (!videoResponse.ok) {
+          if (videoResponse.status === 404) {
+            setError('视频不存在')
+          } else {
+            setError(`获取视频失败: ${videoResponse.status}`)
+          }
+          setLoading(false)
+          return
+        }
+
+        const videoResult = await videoResponse.json()
+        console.log('视频详情API响应:', videoResult)
+        
+        if (videoResult.success) {
+          setVideo(videoResult.data)
+          
+          // 获取相关视频（所有视频，然后排除当前视频）
+          const relatedResponse = await fetch(`http://localhost:3001/api/videos`)
+          if (relatedResponse.ok) {
+            const relatedResult = await relatedResponse.json()
+            if (relatedResult.success) {
+              // 排除当前视频
+              const related = relatedResult.data.videos.filter((v: Video) => v.id.toString() !== id)
+              setRelatedVideos(related.slice(0, 4))
+            }
+          }
+        } else {
+          setError(videoResult.message || '获取视频失败')
+        }
+      } catch (error) {
+        console.error('获取视频数据失败:', error)
+        setError('网络错误，无法获取视频数据')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchVideoData()
   }, [id])
 
   const formatDate = (dateStr: string) => {
@@ -53,6 +93,20 @@ function DetailPage() {
         <div className="bg-background-card aspect-video rounded-lg" />
         <div className="bg-background-card h-8 rounded w-3/4" />
         <div className="bg-background-card h-24 rounded" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-xl text-red-400 mb-4">{error}</p>
+        <button
+          onClick={() => navigate('/')}
+          className="btn-primary"
+        >
+          返回首页
+        </button>
       </div>
     )
   }

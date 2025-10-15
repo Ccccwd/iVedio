@@ -1,21 +1,52 @@
 import { useState, useEffect } from 'react'
 import VideoGrid from '../components/VideoGrid'
 import type { Video } from '@shared/types'
-import videosData from '@shared/mock-data/videos.json'
 
 function HomePage() {
   const [videos, setVideos] = useState<Video[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState('全部')
+  const [error, setError] = useState<string | null>(null)
 
-  const categories = ['全部', '动画']
+  const categories = ['全部', '动画', 'test', 'movies']
 
   useEffect(() => {
-    // 模拟加载数据
-    setTimeout(() => {
-      setVideos(videosData as Video[])
-      setLoading(false)
-    }, 500)
+    const fetchVideos = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        // 从后端API获取视频数据
+        const response = await fetch('http://localhost:3001/api/videos')
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
+        const result = await response.json()
+        
+        if (result.success) {
+          setVideos(result.data.videos || [])
+        } else {
+          throw new Error(result.message || '获取视频失败')
+        }
+      } catch (error) {
+        console.error('获取视频数据失败:', error)
+        setError(error instanceof Error ? error.message : '获取视频数据失败')
+        
+        // 如果API失败，降级使用mock数据
+        try {
+          const mockData = await import('@shared/mock-data/videos.json')
+          setVideos(mockData.default as Video[])
+        } catch (mockError) {
+          console.error('加载mock数据也失败:', mockError)
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchVideos()
   }, [])
 
   const filteredVideos = selectedCategory === '全部'
@@ -28,6 +59,15 @@ function HomePage() {
       <div>
         <h1 className="text-3xl font-bold text-white mb-2">精选视频</h1>
         <p className="text-gray-400">发现优质内容</p>
+        {/* 调试信息 */}
+        <p className="text-sm text-gray-500 mt-2">
+          数据源: API (共 {videos.length} 个视频)
+        </p>
+        {error && (
+          <div className="bg-red-900/20 border border-red-500 text-red-300 px-4 py-2 rounded mt-2">
+            错误: {error}
+          </div>
+        )}
       </div>
 
       {/* 分类标签 */}

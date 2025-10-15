@@ -44,52 +44,12 @@ async function createDefaultData() {
     
     // 检查是否已有视频数据
     const videoCount = await Video.count();
+    console.log(` 当前数据库中有 ${videoCount} 个视频`);
+    
+    // 不再自动创建示例视频数据
+    // 用户可以通过管理接口或脚本手动添加真实视频
     if (videoCount === 0) {
-      console.log(' 创建默认视频数据...');
-      const defaultVideos = [
-        {
-          title: 'iVedio 平台介绍',
-          description: '欢迎来到iVedio视频平台！这是一个基于React和Node.js构建的现代化视频播放平台。',
-          thumbnail: '/placeholder.svg',
-          videoUrl: 'https://example.com/sample1.mp4',
-          duration: 300,
-          views: 1000,
-          releaseDate: new Date(),
-          category: '平台介绍',
-          tags: ['介绍', '平台', 'React', 'Node.js'],
-          quality: 'HD',
-          isVip: false
-        },
-        {
-          title: '技术栈展示',
-          description: '了解iVedio使用的技术栈：React、TypeScript、Tailwind CSS、Node.js、Express等。',
-          thumbnail: '/placeholder.svg',
-          videoUrl: 'https://example.com/sample2.mp4',
-          duration: 450,
-          views: 750,
-          releaseDate: new Date(),
-          category: '技术',
-          tags: ['技术', 'React', 'TypeScript', 'Tailwind'],
-          quality: 'FHD',
-          isVip: false
-        },
-        {
-          title: '功能演示',
-          description: '展示iVedio的核心功能：视频播放、用户管理、观看历史、收藏等。',
-          thumbnail: '/placeholder.svg',
-          videoUrl: 'https://example.com/sample3.mp4',
-          duration: 600,
-          views: 1200,
-          releaseDate: new Date(),
-          category: '演示',
-          tags: ['功能', '演示', '播放器', '用户'],
-          quality: '4K',
-          isVip: true
-        }
-      ];
-      
-      await Video.bulkCreate(defaultVideos);
-      console.log(' 默认视频数据创建完成');
+      console.log(' 数据库中没有视频数据，请使用脚本添加真实视频');
     }
   } catch (error) {
     console.error(' 创建默认数据失败:', error);

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 
 interface VideoPlayerProps {
   src: string
@@ -174,6 +174,10 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
         crossOrigin="anonymous"
         style={{ aspectRatio: '16/9' }}
       >
+        {/* 添加多种格式支持 */}
+        <source src={src} type="video/mp4" />
+        <source src={src} type="video/webm" />
+        <source src={src} type="video/ogg" />
         您的浏览器不支持视频播放。
       </video>
 

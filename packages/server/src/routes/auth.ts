@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
+import { Op } from 'sequelize';
 import { User } from '../models';
 
 const router = Router();
@@ -12,7 +13,9 @@ router.post('/register', async (req, res) => {
 
     // 检查用户是否已存在
     const existingUser = await User.findOne({
-      where: { $or: [{ email }, { username }] }
+      where: { 
+        [Op.or]: [{ email }, { username }] 
+      }
     });
 
     if (existingUser) {
@@ -33,10 +36,18 @@ router.post('/register', async (req, res) => {
     });
 
     // 生成JWT令牌
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({
+        success: false,
+        message: '服务器配置错误：JWT密钥未设置'
+      });
+    }
+
     const token = jwt.sign(
       { userId: user.id, username: user.username },
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      jwtSecret,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as SignOptions
     );
 
     res.status(201).json({
@@ -84,10 +95,18 @@ router.post('/login', async (req, res) => {
     }
 
     // 生成JWT令牌
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({
+        success: false,
+        message: '服务器配置错误：JWT密钥未设置'
+      });
+    }
+
     const token = jwt.sign(
       { userId: user.id, username: user.username },
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      jwtSecret,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as SignOptions
     );
 
     res.json({

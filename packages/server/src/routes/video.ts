@@ -1,5 +1,7 @@
 import { Router } from 'express';
+import { Op } from 'sequelize';
 import { Video, WatchHistory, Favorite } from '../models';
+import { addSignedUrlsToVideos } from '../utils/cosUtils';
 
 const router = Router();
 
@@ -43,10 +45,13 @@ router.get('/', async (req, res) => {
       offset,
     });
 
+    // 为视频添加签名URL
+    const videosWithSignedUrls = addSignedUrlsToVideos(videos);
+
     res.json({
       success: true,
       data: {
-        videos,
+        videos: videosWithSignedUrls,
         pagination: {
           currentPage: Number(page),
           totalPages: Math.ceil(count / Number(limit)),
