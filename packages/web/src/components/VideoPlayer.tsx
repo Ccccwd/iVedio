@@ -19,7 +19,7 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
     if (!userData || !videoId) return
 
     const user = JSON.parse(userData)
-    
+
     try {
       await fetch(`http://localhost:3001/api/videos/${videoId}/progress`, {
         method: 'POST',
@@ -43,11 +43,11 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
     if (!userData || !videoId) return
 
     const user = JSON.parse(userData)
-    
+
     try {
       const response = await fetch(`http://localhost:3001/api/videos/${videoId}/progress/${user.id}`)
       const result = await response.json()
-      
+
       if (result.success && result.data.progress > 0 && videoRef.current) {
         // 如果有观看进度且未看完，从上次位置开始播放
         if (!result.data.completed && result.data.progress > 30) { // 30秒以上才恢复进度
@@ -81,12 +81,12 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
 
     const handleTimeUpdate = () => {
       if (!video.duration || !videoId) return
-      
+
       // 清除之前的定时器
       if (saveProgressTimeoutRef.current) {
         clearTimeout(saveProgressTimeoutRef.current)
       }
-      
+
       // 延迟保存进度，避免频繁请求
       saveProgressTimeoutRef.current = setTimeout(() => {
         saveProgress(video.currentTime, video.duration)
@@ -97,10 +97,10 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
       console.error('Video error:', e)
       console.error('Video error details:', video.error)
       setIsLoading(false)
-      
+
       // 检查是否是MKV格式
       const isMkv = src.includes('.mkv')
-      
+
       if (video.error) {
         switch (video.error.code) {
           case video.error.MEDIA_ERR_ABORTED:
@@ -191,7 +191,7 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
         {src.includes('.webm') && <source src={src} type="video/webm" />}
         {src.includes('.mov') && <source src={src} type="video/quicktime" />}
         {src.includes('.avi') && <source src={src} type="video/x-msvideo" />}
-        
+
         {/* 通用fallback */}
         <source src={src} type="video/mp4" />
         <source src={src} type="video/webm" />
@@ -215,7 +215,7 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
           <div className="text-red-400 text-center p-4 max-w-md">
             <p className="text-lg mb-2">⚠️ 播放错误</p>
             <p className="text-sm mb-3">{error}</p>
-            
+
             {src.includes('.mkv') && (
               <div className="bg-yellow-900/50 border border-yellow-600 rounded p-3 mb-3 text-yellow-200">
                 <p className="text-xs font-medium mb-2">💡 解决方案：</p>
@@ -226,9 +226,9 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
                 </ul>
               </div>
             )}
-            
+
             <p className="text-xs mt-2 text-gray-400 break-all">视频链接: {src}</p>
-            <button 
+            <button
               onClick={() => {
                 setError(null)
                 setIsLoading(true)

@@ -6,14 +6,19 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/packages/server/src/app.ts",
-      "runtimeArgs": ["-r", "ts-node/register"],
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register"
+      ],
       "env": {
         "NODE_ENV": "development"
       },
       "cwd": "${workspaceFolder}/packages/server",
       "console": "integratedTerminal",
       "outputCapture": "std",
-      "skipFiles": ["<node_internals>/**"],
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
       "envFile": "${workspaceFolder}/packages/server/.env"
     },
     {
@@ -21,22 +26,32 @@
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "cwd": "${workspaceFolder}/packages/web",
       "console": "integratedTerminal",
       "outputCapture": "std",
-      "skipFiles": ["<node_internals>/**"]
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
     },
     {
       "name": "启动桌面应用",
-      "type": "node", 
+      "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "cwd": "${workspaceFolder}/packages/desktop",
       "console": "integratedTerminal",
       "outputCapture": "std",
-      "skipFiles": ["<node_internals>/**"]
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
     }
   ],
   "compounds": [

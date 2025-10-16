@@ -1,16 +1,16 @@
+import {
+  Baby,
+  ChevronRight,
+  FileText,
+  Film,
+  Home,
+  Mic,
+  Trophy,
+  Tv,
+  Zap
+} from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { 
-  Home, 
-  Tv, 
-  Film, 
-  Mic, 
-  Zap, 
-  Baby, 
-  FileText, 
-  Trophy,
-  ChevronRight 
-} from 'lucide-react'
 
 interface SidebarProps {
   isOpen: boolean
@@ -43,12 +43,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     <>
       {/* 遮罩层 */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={onClose}
         />
       )}
-      
+
       {/* 侧边栏 */}
       <aside className={`
         fixed left-0 top-0 h-full w-64 bg-background-secondary z-50
@@ -83,8 +83,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       className={`
                         flex items-center justify-between px-4 py-3 rounded-lg
                         transition-all duration-200 group
-                        ${isActive 
-                          ? 'bg-primary text-white shadow-lg' 
+                        ${isActive
+                          ? 'bg-primary text-white shadow-lg'
                           : 'text-gray-300 hover:bg-background-card hover:text-white'
                         }
                       `}

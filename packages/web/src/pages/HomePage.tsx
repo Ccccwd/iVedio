@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import type { Video } from '@shared/types'
 import { ChevronLeft, ChevronRight, Play, Volume2, VolumeX } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import VideoCard from '../components/VideoCard'
-import type { Video } from '@shared/types'
 
 function HomePage() {
   const [videos, setVideos] = useState<Video[]>([])
@@ -20,14 +20,14 @@ function HomePage() {
     try {
       setLoading(true)
       const response = await fetch('http://localhost:3001/api/videos')
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      
+
       const result = await response.json()
       console.log('API响应:', result)
-      
+
       if (result.success) {
         setVideos(result.data.videos || [])
       } else {
@@ -57,12 +57,12 @@ function HomePage() {
 
   useEffect(() => {
     fetchVideos()
-    
+
     // 5秒后开始播放预览视频
     const timer = setTimeout(() => {
       setShowVideo(true)
     }, 5000)
-    
+
     return () => clearTimeout(timer)
   }, [])
 
@@ -72,10 +72,10 @@ function HomePage() {
       <div className="absolute inset-0">
         {!showVideo ? (
           // 显示封面图片
-          <div 
+          <div
             className="w-full h-full bg-cover bg-center transition-opacity duration-1000"
-            style={{ 
-              backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url(${spiritedAwayBanner.posterUrl})` 
+            style={{
+              backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url(${spiritedAwayBanner.posterUrl})`
             }}
           />
         ) : (
@@ -102,7 +102,7 @@ function HomePage() {
             <source src={spiritedAwayBanner.videoUrl} type="video/mp4" />
           </video>
         )}
-        
+
         {/* 渐变遮罩 */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
       </div>
@@ -196,7 +196,7 @@ function HomePage() {
           </button>
         </div>
       </div>
-      
+
       {/* 内容预留区域 */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {[...Array(6)].map((_, index) => (
@@ -232,7 +232,7 @@ function HomePage() {
     return (
       <div className="text-center py-20">
         <p className="text-red-400 text-xl mb-4">{error}</p>
-        <button 
+        <button
           onClick={fetchVideos}
           className="btn-primary"
         >
@@ -256,7 +256,7 @@ function HomePage() {
               <p className="text-gray-400">发现精彩内容</p>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {videos.map((video) => (
               <VideoCard key={video.id} video={video} />
@@ -266,29 +266,29 @@ function HomePage() {
       )}
 
       {/* 分类预留区域 */}
-      <CategorySection 
-        title="电视剧" 
-        description="热播剧集，追剧必看" 
+      <CategorySection
+        title="电视剧"
+        description="热播剧集，追剧必看"
       />
-      
-      <CategorySection 
-        title="电影" 
-        description="精选影片，院线大片" 
+
+      <CategorySection
+        title="电影"
+        description="精选影片，院线大片"
       />
-      
-      <CategorySection 
-        title="综艺" 
-        description="热门综艺，娱乐无限" 
+
+      <CategorySection
+        title="综艺"
+        description="热门综艺，娱乐无限"
       />
-      
-      <CategorySection 
-        title="动漫" 
-        description="动画世界，精彩纷呈" 
+
+      <CategorySection
+        title="动漫"
+        description="动画世界，精彩纷呈"
       />
-      
-      <CategorySection 
-        title="纪录片" 
-        description="探索世界，增长见识" 
+
+      <CategorySection
+        title="纪录片"
+        description="探索世界，增长见识"
       />
 
       {/* 调试信息 */}

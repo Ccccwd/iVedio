@@ -2,7 +2,7 @@ import CategoryPage from '../components/CategoryPage'
 
 function KidsPage() {
   return (
-    <CategoryPage 
+    <CategoryPage
       category="kids"
       title="少儿"
       description="儿童节目，寓教于乐"

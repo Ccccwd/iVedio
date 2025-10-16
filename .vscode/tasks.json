@@ -5,7 +5,9 @@
       "label": "安装依赖",
       "type": "shell",
       "command": "npm",
-      "args": ["install"],
+      "args": [
+        "install"
+      ],
       "group": "build",
       "presentation": {
         "echo": true,
@@ -19,9 +21,12 @@
     },
     {
       "label": "启动后端服务器",
-      "type": "shell", 
+      "type": "shell",
       "command": "npm",
-      "args": ["run", "dev"],
+      "args": [
+        "run",
+        "dev"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/packages/server"
       },
@@ -39,7 +44,10 @@
         "owner": "typescript",
         "source": "ts",
         "applyTo": "closedDocuments",
-        "fileLocation": ["relative", "${cwd}"],
+        "fileLocation": [
+          "relative",
+          "${cwd}"
+        ],
         "pattern": "$tsc",
         "background": {
           "activeOnStart": true,
@@ -51,15 +59,18 @@
     {
       "label": "启动前端开发服务器",
       "type": "shell",
-      "command": "npm", 
-      "args": ["run", "dev"],
+      "command": "npm",
+      "args": [
+        "run",
+        "dev"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/packages/web"
       },
       "group": "build",
       "presentation": {
         "echo": true,
-        "reveal": "always", 
+        "reveal": "always",
         "focus": false,
         "panel": "dedicated",
         "showReuseMessage": true,
@@ -70,7 +81,10 @@
         "owner": "vite",
         "source": "vite",
         "applyTo": "closedDocuments",
-        "fileLocation": ["relative", "${cwd}"],
+        "fileLocation": [
+          "relative",
+          "${cwd}"
+        ],
         "pattern": "$tsc",
         "background": {
           "activeOnStart": true,
@@ -83,7 +97,10 @@
       "label": "启动桌面应用",
       "type": "shell",
       "command": "npm",
-      "args": ["run", "dev"], 
+      "args": [
+        "run",
+        "dev"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/packages/desktop"
       },
@@ -92,7 +109,7 @@
         "echo": true,
         "reveal": "always",
         "focus": false,
-        "panel": "dedicated", 
+        "panel": "dedicated",
         "showReuseMessage": true,
         "clear": false
       },
@@ -103,7 +120,10 @@
       "label": "构建项目",
       "type": "shell",
       "command": "npm",
-      "args": ["run", "build"],
+      "args": [
+        "run",
+        "build"
+      ],
       "group": "build",
       "presentation": {
         "echo": true,
@@ -113,14 +133,19 @@
         "showReuseMessage": true,
         "clear": false
       },
-      "problemMatcher": ["$tsc"]
+      "problemMatcher": [
+        "$tsc"
+      ]
     },
     {
       "label": "清理项目",
       "type": "shell",
       "command": "npm",
-      "args": ["run", "clean"],
-      "group": "build", 
+      "args": [
+        "run",
+        "clean"
+      ],
+      "group": "build",
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -135,7 +160,10 @@
       "label": "查看数据库",
       "type": "shell",
       "command": "npx",
-      "args": ["ts-node", "src/scripts/viewDatabase.ts"],
+      "args": [
+        "ts-node",
+        "src/scripts/viewDatabase.ts"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/packages/server"
       },
@@ -152,9 +180,12 @@
     },
     {
       "label": "重置数据库",
-      "type": "shell", 
+      "type": "shell",
       "command": "npx",
-      "args": ["ts-node", "src/scripts/resetWithRealData.ts"],
+      "args": [
+        "ts-node",
+        "src/scripts/resetWithRealData.ts"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/packages/server"
       },

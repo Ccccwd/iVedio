@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Calendar, Eye, Tag } from 'lucide-react'
-import VideoPlayer from '../components/VideoPlayer'
-import VideoCard from '../components/VideoCard'
 import type { Video } from '@shared/types'
+import { ArrowLeft, Calendar, Eye, Tag } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import VideoCard from '../components/VideoCard'
+import VideoPlayer from '../components/VideoPlayer'
 
 function DetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -29,7 +29,7 @@ function DetailPage() {
 
         // 获取指定视频详情
         const videoResponse = await fetch(`http://localhost:3001/api/videos/${id}`)
-        
+
         if (!videoResponse.ok) {
           if (videoResponse.status === 404) {
             setError('视频不存在')
@@ -42,10 +42,10 @@ function DetailPage() {
 
         const videoResult = await videoResponse.json()
         console.log('视频详情API响应:', videoResult)
-        
+
         if (videoResult.success) {
           setVideo(videoResult.data)
-          
+
           // 获取相关视频（所有视频，然后排除当前视频）
           const relatedResponse = await fetch(`http://localhost:3001/api/videos`)
           if (relatedResponse.ok) {
@@ -136,7 +136,7 @@ function DetailPage() {
           <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-200" />
           <span>返回</span>
         </button>
-        
+
         {/* 面包屑导航 */}
         <div className="flex items-center space-x-2 text-sm text-gray-400">
           <span>首页</span>

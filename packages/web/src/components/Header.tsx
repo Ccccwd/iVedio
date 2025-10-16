@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom'
-import { Play, Search, User, LogOut, Menu } from 'lucide-react'
-import { useState, useEffect } from 'react'
-import AuthModal from './AuthModal'
+import { LogOut, Menu, Play, Search, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import AuthModal from './AuthModal';
 
 interface UserData {
   id: number;
@@ -23,7 +23,7 @@ function Header({ onMenuClick }: HeaderProps) {
     // 检查本地存储中的登录状态
     const token = localStorage.getItem('authToken')
     const storedUserData = localStorage.getItem('userData')
-    
+
     if (token && storedUserData) {
       setIsLoggedIn(true)
       setUserData(JSON.parse(storedUserData))
@@ -75,7 +75,7 @@ function Header({ onMenuClick }: HeaderProps) {
                   className="bg-transparent border-none outline-none text-white placeholder-gray-400 w-48"
                 />
               </div>
-              
+
               {/* User Menu */}
               {isLoggedIn ? (
                 <div className="relative">
@@ -86,7 +86,7 @@ function Header({ onMenuClick }: HeaderProps) {
                     <User className="w-6 h-6" />
                     <span className="hidden md:inline">{userData?.username}</span>
                   </button>
-                  
+
                   {/* Dropdown Menu */}
                   {showUserMenu && (
                     <div className="absolute right-0 mt-2 w-48 bg-background-card border border-gray-700 rounded-lg shadow-lg py-2 z-50">

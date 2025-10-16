@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import { Play, Filter } from 'lucide-react'
-import VideoCard from '../components/VideoCard'
 import type { Video } from '@shared/types'
+import { Filter, Play } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import VideoCard from '../components/VideoCard'
 
 interface CategoryPageProps {
   category: string
@@ -67,7 +67,7 @@ function CategoryPage({ category, title, description }: CategoryPageProps) {
       <div className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-lg p-8">
         <h1 className="text-3xl font-bold text-white mb-2">{title}</h1>
         <p className="text-gray-300 mb-6">{description}</p>
-        
+
         {/* 筛选器 */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
@@ -79,11 +79,10 @@ function CategoryPage({ category, title, description }: CategoryPageProps) {
               <button
                 key={filter}
                 onClick={() => setSelectedFilter(filter)}
-                className={`px-4 py-2 rounded-full text-sm transition ${
-                  selectedFilter === filter
+                className={`px-4 py-2 rounded-full text-sm transition ${selectedFilter === filter
                     ? 'bg-primary text-white'
                     : 'bg-background-card text-gray-300 hover:bg-background-hover'
-                }`}
+                  }`}
               >
                 {filter}
               </button>

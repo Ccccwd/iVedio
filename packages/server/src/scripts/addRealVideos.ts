@@ -1,4 +1,3 @@
-import { sequelize } from '../config/database';
 import { Video } from '../models';
 
 async function addRealVideos() {
