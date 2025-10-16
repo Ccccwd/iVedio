@@ -1,0 +1,71 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "启动后端服务器",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/packages/server/src/app.ts",
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "cwd": "${workspaceFolder}/packages/server",
+      "console": "integratedTerminal",
+      "outputCapture": "std",
+      "skipFiles": ["<node_internals>/**"],
+      "envFile": "${workspaceFolder}/packages/server/.env"
+    },
+    {
+      "name": "启动前端开发服务器",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}/packages/web",
+      "console": "integratedTerminal",
+      "outputCapture": "std",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "启动桌面应用",
+      "type": "node", 
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}/packages/desktop",
+      "console": "integratedTerminal",
+      "outputCapture": "std",
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "启动完整应用 (前端+后端)",
+      "configurations": [
+        "启动后端服务器",
+        "启动前端开发服务器"
+      ],
+      "stopAll": true,
+      "presentation": {
+        "hidden": false,
+        "group": "iVedio",
+        "order": 1
+      }
+    },
+    {
+      "name": "启动全栈应用 (前端+后端+桌面)",
+      "configurations": [
+        "启动后端服务器",
+        "启动前端开发服务器",
+        "启动桌面应用"
+      ],
+      "stopAll": true,
+      "presentation": {
+        "hidden": false,
+        "group": "iVedio",
+        "order": 2
+      }
+    }
+  ]
+}

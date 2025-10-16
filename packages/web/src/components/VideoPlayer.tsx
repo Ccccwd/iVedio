@@ -98,6 +98,9 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
       console.error('Video error details:', video.error)
       setIsLoading(false)
       
+      // 检查是否是MKV格式
+      const isMkv = src.includes('.mkv')
+      
       if (video.error) {
         switch (video.error.code) {
           case video.error.MEDIA_ERR_ABORTED:
@@ -107,10 +110,18 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
             setError('网络错误，无法加载视频')
             break
           case video.error.MEDIA_ERR_DECODE:
-            setError('视频解码错误')
+            if (isMkv) {
+              setError('MKV格式解码错误，建议使用支持MKV的播放器或转换为MP4格式')
+            } else {
+              setError('视频解码错误')
+            }
             break
           case video.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-            setError('视频格式不支持或文件损坏')
+            if (isMkv) {
+              setError('MKV格式在此浏览器中不受支持，建议使用Chrome、Firefox最新版本或转换为MP4格式')
+            } else {
+              setError('视频格式不支持或文件损坏')
+            }
             break
           default:
             setError('未知错误')
@@ -174,7 +185,14 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
         crossOrigin="anonymous"
         style={{ aspectRatio: '16/9' }}
       >
-        {/* 添加多种格式支持 */}
+        {/* 根据文件扩展名设置正确的MIME类型 */}
+        {src.includes('.mkv') && <source src={src} type="video/x-matroska" />}
+        {src.includes('.mp4') && <source src={src} type="video/mp4" />}
+        {src.includes('.webm') && <source src={src} type="video/webm" />}
+        {src.includes('.mov') && <source src={src} type="video/quicktime" />}
+        {src.includes('.avi') && <source src={src} type="video/x-msvideo" />}
+        
+        {/* 通用fallback */}
         <source src={src} type="video/mp4" />
         <source src={src} type="video/webm" />
         <source src={src} type="video/ogg" />
@@ -194,10 +212,22 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
       {/* 错误状态 */}
       {error && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75">
-          <div className="text-red-400 text-center p-4">
+          <div className="text-red-400 text-center p-4 max-w-md">
             <p className="text-lg mb-2">⚠️ 播放错误</p>
-            <p className="text-sm">{error}</p>
-            <p className="text-xs mt-2 text-gray-400">视频链接: {src}</p>
+            <p className="text-sm mb-3">{error}</p>
+            
+            {src.includes('.mkv') && (
+              <div className="bg-yellow-900/50 border border-yellow-600 rounded p-3 mb-3 text-yellow-200">
+                <p className="text-xs font-medium mb-2">💡 解决方案：</p>
+                <ul className="text-xs text-left space-y-1">
+                  <li>• 使用最新版Chrome或Firefox浏览器</li>
+                  <li>• 建议将MKV文件转换为MP4格式</li>
+                  <li>• 使用VLC等专业播放器</li>
+                </ul>
+              </div>
+            )}
+            
+            <p className="text-xs mt-2 text-gray-400 break-all">视频链接: {src}</p>
             <button 
               onClick={() => {
                 setError(null)

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Play, Search, User, LogOut } from 'lucide-react'
+import { Play, Search, User, LogOut, Menu } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import AuthModal from './AuthModal'
 
@@ -9,7 +9,11 @@ interface UserData {
   email: string;
 }
 
-function Header() {
+interface HeaderProps {
+  onMenuClick: () => void
+}
+
+function Header({ onMenuClick }: HeaderProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userData, setUserData] = useState<UserData | null>(null)
   const [showAuthModal, setShowAuthModal] = useState(false)
@@ -47,26 +51,19 @@ function Header() {
       <header className="sticky top-0 z-50 bg-background-card border-b border-gray-800">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={onMenuClick}
+              className="lg:hidden p-2 text-gray-300 hover:text-white transition"
+            >
+              <Menu size={24} />
+            </button>
+
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition">
               <Play className="w-8 h-8 text-primary" fill="currentColor" />
               <span className="text-xl font-bold text-white">iVedio</span>
             </Link>
-
-            {/* Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
-              <Link to="/" className="text-gray-300 hover:text-white transition">
-                首页
-              </Link>
-              <a href="#" className="text-gray-300 hover:text-white transition">
-                分类
-              </a>
-              {isLoggedIn && (
-                <Link to="/profile" className="text-gray-300 hover:text-white transition">
-                  个人中心
-                </Link>
-              )}
-            </nav>
 
             {/* Search */}
             <div className="flex items-center space-x-4">

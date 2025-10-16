@@ -128,13 +128,24 @@ function DetailPage() {
   return (
     <div className="space-y-8">
       {/* 返回按钮 */}
-      <button
-        onClick={() => navigate('/')}
-        className="flex items-center space-x-2 text-gray-300 hover:text-white transition"
-      >
-        <ArrowLeft className="w-5 h-5" />
-        <span>返回首页</span>
-      </button>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors duration-200 group"
+        >
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-200" />
+          <span>返回</span>
+        </button>
+        
+        {/* 面包屑导航 */}
+        <div className="flex items-center space-x-2 text-sm text-gray-400">
+          <span>首页</span>
+          <span>/</span>
+          <span>{video?.category}</span>
+          <span>/</span>
+          <span className="text-white truncate max-w-32">{video?.title}</span>
+        </div>
+      </div>
 
       {/* 视频播放器 */}
       <div className="max-w-6xl">
