@@ -23,7 +23,7 @@ interface VideoAttributes {
   updatedAt?: Date;
 }
 
-interface VideoCreationAttributes extends Optional<VideoAttributes, 'id' | 'views' | 'rating' | 'createdAt' | 'updatedAt'> {}
+interface VideoCreationAttributes extends Optional<VideoAttributes, 'id' | 'views' | 'rating' | 'createdAt' | 'updatedAt'> { }
 
 class Video extends Model<VideoAttributes, VideoCreationAttributes> implements VideoAttributes {
   public id!: number;
