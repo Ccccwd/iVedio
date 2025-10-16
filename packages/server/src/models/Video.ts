@@ -6,7 +6,9 @@ interface VideoAttributes {
   title: string;
   description: string;
   videoUrl: string;
+  previewVideoUrl?: string; // 预览视频URL（10-30秒片段）
   thumbnail: string;
+  posterUrl?: string; // 海报图片URL（高分辨率）
   duration: number;
   views: number;
   category: string;
@@ -28,7 +30,9 @@ class Video extends Model<VideoAttributes, VideoCreationAttributes> implements V
   public title!: string;
   public description!: string;
   public videoUrl!: string;
+  public previewVideoUrl?: string;
   public thumbnail!: string;
+  public posterUrl?: string;
   public duration!: number;
   public views!: number;
   public category!: string;
@@ -62,9 +66,19 @@ Video.init(
       type: DataTypes.TEXT,
       allowNull: false,
     },
+    previewVideoUrl: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: '预览视频URL（10-30秒片段）'
+    },
     thumbnail: {
       type: DataTypes.TEXT,
       allowNull: false,
+    },
+    posterUrl: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: '海报图片URL（高分辨率）'
     },
     duration: {
       type: DataTypes.INTEGER,
