@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频调试工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        video {
+            width: 100%;
+            max-width: 800px;
+            background: black;
+            margin: 20px 0;
+        }
+        .info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .error {
+            background: #fee;
+            color: #c00;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .log {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            padding: 2px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 视频调试工具</h1>
+        
+        <div>
+            <label for="videoUrl">视频URL:</label><br>
+            <input type="text" id="videoUrl" style="width: 80%; padding: 8px; margin: 10px 0;" 
+                   value="https://ivedio-vedio-1325747247.cos.ap-nanjing.myqcloud.com/qianyuqianxun.mp4">
+            <button onclick="loadVideo()">加载视频</button>
+            <button onclick="clearLog()">清除日志</button>
+        </div>
+
+        <video id="testVideo" controls crossorigin="anonymous"></video>
+
+        <div class="info">
+            <h3>视频信息:</h3>
+            <div id="videoInfo">等待加载...</div>
+        </div>
+
+        <div class="log">
+            <h3>事件日志:</h3>
+            <div id="eventLog"></div>
+        </div>
+
+        <div id="errorInfo" class="error" style="display: none;"></div>
+
+        <div style="margin-top: 20px;">
+            <h3>测试操作:</h3>
+            <button onclick="testVideo.play()">播放</button>
+            <button onclick="testVideo.pause()">暂停</button>
+            <button onclick="testVideo.currentTime += 10">快进10秒</button>
+            <button onclick="testVideo.currentTime -= 10">快退10秒</button>
+            <button onclick="testVideo.currentTime = testVideo.duration / 2">跳到中间</button>
+        </div>
+    </div>
+
+    <script>
+        const testVideo = document.getElementById('testVideo');
+        const videoInfo = document.getElementById('videoInfo');
+        const eventLog = document.getElementById('eventLog');
+        const errorInfo = document.getElementById('errorInfo');
+
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const time = new Date().toLocaleTimeString();
+            entry.textContent = `[${time}] ${message}`;
+            if (type === 'error') entry.style.color = 'red';
+            if (type === 'warn') entry.style.color = 'orange';
+            eventLog.insertBefore(entry, eventLog.firstChild);
+        }
+
+        function clearLog() {
+            eventLog.innerHTML = '';
+        }
+
+        function updateInfo() {
+            if (!testVideo) return;
+            
+            const info = `
+                URL: ${testVideo.currentSrc}
+                时长: ${testVideo.duration.toFixed(2)}秒 (${(testVideo.duration / 60).toFixed(2)}分钟)
+                当前时间: ${testVideo.currentTime.toFixed(2)}秒
+                缓冲范围: ${getBufferedRanges()}
+                就绪状态: ${getReadyState()}
+                网络状态: ${getNetworkState()}
+                视频宽高: ${testVideo.videoWidth} x ${testVideo.videoHeight}
+                是否暂停: ${testVideo.paused}
+                是否结束: ${testVideo.ended}
+                音量: ${testVideo.volume}
+                是否静音: ${testVideo.muted}
+            `;
+            videoInfo.textContent = info;
+        }
+
+        function getBufferedRanges() {
+            if (!testVideo.buffered.length) return '无';
+            const ranges = [];
+            for (let i = 0; i < testVideo.buffered.length; i++) {
+                ranges.push(`${testVideo.buffered.start(i).toFixed(1)}-${testVideo.buffered.end(i).toFixed(1)}`);
+            }
+            return ranges.join(', ');
+        }
+
+        function getReadyState() {
+            const states = ['HAVE_NOTHING', 'HAVE_METADATA', 'HAVE_CURRENT_DATA', 'HAVE_FUTURE_DATA', 'HAVE_ENOUGH_DATA'];
+            return states[testVideo.readyState] || testVideo.readyState;
+        }
+
+        function getNetworkState() {
+            const states = ['NETWORK_EMPTY', 'NETWORK_IDLE', 'NETWORK_LOADING', 'NETWORK_NO_SOURCE'];
+            return states[testVideo.networkState] || testVideo.networkState;
+        }
+
+        function loadVideo() {
+            const url = document.getElementById('videoUrl').value;
+            testVideo.src = url;
+            testVideo.load();
+            log(`加载视频: ${url}`);
+            errorInfo.style.display = 'none';
+        }
+
+        // 监听所有视频事件
+        const events = [
+            'loadstart', 'progress', 'suspend', 'abort', 'error',
+            'emptied', 'stalled', 'loadedmetadata', 'loadeddata',
+            'canplay', 'canplaythrough', 'playing', 'waiting',
+            'seeking', 'seeked', 'ended', 'durationchange',
+            'timeupdate', 'play', 'pause', 'ratechange',
+            'resize', 'volumechange'
+        ];
+
+        events.forEach(eventName => {
+            testVideo.addEventListener(eventName, (e) => {
+                log(`事件: ${eventName}`);
+                if (eventName === 'loadedmetadata' || eventName === 'timeupdate') {
+                    updateInfo();
+                }
+                if (eventName === 'error') {
+                    const error = testVideo.error;
+                    const errorCodes = ['', 'MEDIA_ERR_ABORTED', 'MEDIA_ERR_NETWORK', 'MEDIA_ERR_DECODE', 'MEDIA_ERR_SRC_NOT_SUPPORTED'];
+                    const errorMsg = `错误代码: ${error.code} (${errorCodes[error.code]})\n错误信息: ${error.message}`;
+                    log(errorMsg, 'error');
+                    errorInfo.textContent = errorMsg;
+                    errorInfo.style.display = 'block';
+                }
+                if (eventName === 'stalled') {
+                    log('警告: 视频加载停滞', 'warn');
+                }
+            });
+        });
+
+        // 自动加载视频
+        window.onload = () => {
+            loadVideo();
+        };
+
+        // 定期更新信息
+        setInterval(updateInfo, 1000);
+    </script>
+</body>
+</html>

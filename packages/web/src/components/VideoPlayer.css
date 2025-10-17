@@ -1,4 +1,38 @@
 /* VideoPlayer 自定义样式 */
+
+/* 确保禁用所有原生视频控制 */
+video::-webkit-media-controls {
+    display: none !important;
+}
+
+video::-webkit-media-controls-enclosure {
+    display: none !important;
+}
+
+video::-webkit-media-controls-panel {
+    display: none !important;
+}
+
+video::-webkit-media-controls-play-button {
+    display: none !important;
+}
+
+video::-webkit-media-controls-start-playback-button {
+    display: none !important;
+}
+
+video::-moz-media-controls {
+    display: none !important;
+}
+
+video {
+    outline: none;
+}
+
+video:focus {
+    outline: none;
+}
+
 .slider {
     -webkit-appearance: none;
     appearance: none;

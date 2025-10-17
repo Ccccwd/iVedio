@@ -195,6 +195,7 @@ function DetailPage() {
               src={video.videoUrl}
               poster={video.thumbnail}
               videoId={video.id}
+              useNativeControls={false}
             />
             {isMinimized && (
               <button
