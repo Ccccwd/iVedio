@@ -1,4 +1,18 @@
 ﻿import { useEffect, useRef, useState } from 'react'
+import { Send, Settings, Play, Pause, Volume2, VolumeX, Maximize, SkipBack, SkipForward } from 'lucide-react'
+import './VideoPlayer.css'
+
+interface Danmaku {
+  id: number
+  content: string
+  time: number
+  color: string
+  type: 'scroll' | 'top' | 'bottom'
+  fontSize: number
+  user: {
+    username: string
+  }
+}
 
 interface VideoPlayerProps {
   src: string
@@ -9,9 +23,29 @@ interface VideoPlayerProps {
 
 function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const danmakuContainerRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [danmakus, setDanmakus] = useState<Danmaku[]>([])
+  const [newDanmaku, setNewDanmaku] = useState('')
+  const [danmakuSettings, setDanmakuSettings] = useState({
+    enabled: true,
+    opacity: 0.8,
+    fontSize: 14,
+    speed: 10, // 秒数，弹幕从右到左移动的时间
+  })
+  const [showDanmakuInput, setShowDanmakuInput] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [showControls, setShowControls] = useState(true)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
+  const [volume, setVolume] = useState(1)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const saveProgressTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const activeDanmakusRef = useRef<Set<number>>(new Set())
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // 保存观看进度
   const saveProgress = async (currentTime: number, duration: number) => {
@@ -59,6 +93,224 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
     }
   }
 
+  // 获取弹幕数据
+  const loadDanmakus = async () => {
+    if (!videoId) return
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/danmakus/video/${videoId}`)
+      const result = await response.json()
+      if (result.success) {
+        setDanmakus(result.data)
+      }
+    } catch (error) {
+      console.error('加载弹幕失败:', error)
+    }
+  }
+
+  // 发送弹幕
+  const sendDanmaku = async () => {
+    if (!newDanmaku.trim() || !videoId || !videoRef.current) return
+
+    const video = videoRef.current
+    const currentTime = video.currentTime
+    const userData = localStorage.getItem('userData')
+    const user = userData ? JSON.parse(userData) : { id: 1 }
+
+    try {
+      const response = await fetch('http://localhost:3001/api/danmakus', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          videoId: parseInt(videoId),
+          content: newDanmaku.trim(),
+          time: currentTime,
+          color: '#FFFFFF',
+          type: 'scroll',
+          fontSize: danmakuSettings.fontSize
+        })
+      })
+
+      const result = await response.json()
+      if (result.success) {
+        // 立即显示新发送的弹幕
+        const newDanmakuItem = result.data
+        setDanmakus(prev => [...prev, newDanmakuItem])
+        displayDanmaku(newDanmakuItem, true)
+        setNewDanmaku('')
+        setShowDanmakuInput(false)
+      }
+    } catch (error) {
+      console.error('发送弹幕失败:', error)
+    }
+  }
+
+  // 显示弹幕
+  const displayDanmaku = (danmaku: Danmaku, immediate = false) => {
+    if (!danmakuSettings.enabled || !danmakuContainerRef.current) return
+    if (activeDanmakusRef.current.has(danmaku.id)) return
+
+    const container = danmakuContainerRef.current
+    const video = videoRef.current
+    if (!video) return
+
+    // 如果不是立即显示，检查时间是否匹配
+    if (!immediate && Math.abs(video.currentTime - danmaku.time) > 0.5) return
+
+    activeDanmakusRef.current.add(danmaku.id)
+
+    const danmakuElement = document.createElement('div')
+    danmakuElement.className = 'absolute whitespace-nowrap pointer-events-none select-none'
+    danmakuElement.style.cssText = `
+      color: ${danmaku.color};
+      font-size: ${danmaku.fontSize}px;
+      opacity: ${danmakuSettings.opacity};
+      z-index: 10;
+      right: 0;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+      font-weight: bold;
+      transition: transform ${danmakuSettings.speed}s linear;
+    `
+    danmakuElement.textContent = danmaku.content
+
+    // 随机垂直位置
+    const containerHeight = container.offsetHeight
+    const danmakuHeight = danmaku.fontSize + 4
+    const maxTop = Math.max(0, containerHeight - danmakuHeight - 50) // 避免遮挡控制栏
+    const randomTop = Math.random() * maxTop
+    danmakuElement.style.top = `${randomTop}px`
+
+    container.appendChild(danmakuElement)
+
+    // 动画：从右到左移动
+    requestAnimationFrame(() => {
+      const elementWidth = danmakuElement.offsetWidth
+      const containerWidth = container.offsetWidth
+      danmakuElement.style.transform = `translateX(-${containerWidth + elementWidth}px)`
+    })
+
+    // 动画结束后移除元素
+    setTimeout(() => {
+      if (danmakuElement.parentNode) {
+        danmakuElement.parentNode.removeChild(danmakuElement)
+      }
+      activeDanmakusRef.current.delete(danmaku.id)
+    }, danmakuSettings.speed * 1000)
+  }
+
+  // 处理视频时间更新，显示对应时间的弹幕
+  const handleTimeUpdate = () => {
+    if (!videoRef.current || !danmakuSettings.enabled) return
+
+    const currentTime = videoRef.current.currentTime
+
+    // 查找当前时间应该显示的弹幕
+    danmakus.forEach(danmaku => {
+      if (Math.abs(currentTime - danmaku.time) < 0.5) {
+        displayDanmaku(danmaku)
+      }
+    })
+
+    // 保存观看进度（防抖）
+    if (saveProgressTimeoutRef.current) {
+      clearTimeout(saveProgressTimeoutRef.current)
+    }
+    saveProgressTimeoutRef.current = setTimeout(() => {
+      if (videoRef.current && videoId) {
+        saveProgress(videoRef.current.currentTime, videoRef.current.duration)
+      }
+    }, 2000)
+  }
+
+  // 播放器控制函数
+  const togglePlay = () => {
+    const video = videoRef.current
+    if (!video) return
+
+    if (video.paused) {
+      video.play()
+      setIsPlaying(true)
+    } else {
+      video.pause()
+      setIsPlaying(false)
+    }
+  }
+
+  const toggleMute = () => {
+    const video = videoRef.current
+    if (!video) return
+
+    video.muted = !video.muted
+    setIsMuted(video.muted)
+  }
+
+  const handleVolumeChange = (newVolume: number) => {
+    const video = videoRef.current
+    if (!video) return
+
+    video.volume = newVolume
+    setVolume(newVolume)
+    setIsMuted(newVolume === 0)
+  }
+
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const video = videoRef.current
+    if (!video || !duration) return
+
+    const rect = e.currentTarget.getBoundingClientRect()
+    const clickX = e.clientX - rect.left
+    const newTime = (clickX / rect.width) * duration
+    video.currentTime = newTime
+    setCurrentTime(newTime)
+  }
+
+  const handleSkip = (seconds: number) => {
+    const video = videoRef.current
+    if (!video) return
+
+    video.currentTime = Math.max(0, Math.min(duration, video.currentTime + seconds))
+  }
+
+  const toggleFullscreen = async () => {
+    const container = videoRef.current?.parentElement
+    if (!container) return
+
+    try {
+      if (!document.fullscreenElement) {
+        await container.requestFullscreen()
+        setIsFullscreen(true)
+      } else {
+        await document.exitFullscreen()
+        setIsFullscreen(false)
+      }
+    } catch (error) {
+      console.error('全屏切换失败:', error)
+    }
+  }
+
+  // 控制栏自动隐藏
+  const showControlsTemporarily = () => {
+    setShowControls(true)
+    if (controlsTimeoutRef.current) {
+      clearTimeout(controlsTimeoutRef.current)
+    }
+    controlsTimeoutRef.current = setTimeout(() => {
+      if (isPlaying) {
+        setShowControls(false)
+      }
+    }, 3000)
+  }
+
+  // 格式化时间
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60)
+    const seconds = Math.floor(time % 60)
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  }
+
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
@@ -79,8 +331,18 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
       loadProgress()
     }
 
-    const handleTimeUpdate = () => {
+    const handleTimeUpdateInternal = () => {
       if (!video.duration || !videoId) return
+
+      // 更新播放器状态
+      setCurrentTime(video.currentTime)
+      setDuration(video.duration)
+      setIsPlaying(!video.paused)
+      setIsMuted(video.muted)
+      setVolume(video.volume)
+
+      // 处理弹幕显示
+      handleTimeUpdate()
 
       // 清除之前的定时器
       if (saveProgressTimeoutRef.current) {
@@ -148,7 +410,7 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
     // 添加事件监听器
     video.addEventListener('loadstart', handleLoadStart)
     video.addEventListener('canplay', handleCanPlay)
-    video.addEventListener('timeupdate', handleTimeUpdate)
+    video.addEventListener('timeupdate', handleTimeUpdateInternal)
     video.addEventListener('ended', handleEnded)
     video.addEventListener('error', handleError)
     video.addEventListener('loadedmetadata', handleLoadedMetadata)
@@ -158,14 +420,20 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
     video.src = src
     video.load()
 
+    // 加载弹幕数据
+    loadDanmakus()
+
     // 清理函数
     return () => {
       if (saveProgressTimeoutRef.current) {
         clearTimeout(saveProgressTimeoutRef.current)
       }
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current)
+      }
       video.removeEventListener('loadstart', handleLoadStart)
       video.removeEventListener('canplay', handleCanPlay)
-      video.removeEventListener('timeupdate', handleTimeUpdate)
+      video.removeEventListener('timeupdate', handleTimeUpdateInternal)
       video.removeEventListener('ended', handleEnded)
       video.removeEventListener('error', handleError)
       video.removeEventListener('loadedmetadata', handleLoadedMetadata)
@@ -174,16 +442,21 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
   }, [src, onReady, videoId])
 
   return (
-    <div className="relative rounded-lg overflow-hidden bg-black">
+    <div 
+      className="relative rounded-lg overflow-hidden bg-black group"
+      onMouseMove={showControlsTemporarily}
+      onMouseLeave={() => isPlaying && setShowControls(false)}
+    >
+      {/* 视频元素 */}
       <video
         ref={videoRef}
-        className="w-full h-auto"
-        controls
+        className="w-full h-auto cursor-pointer"
         poster={poster}
         preload="metadata"
         playsInline
         crossOrigin="anonymous"
         style={{ aspectRatio: '16/9' }}
+        onClick={togglePlay}
       >
         {/* 根据文件扩展名设置正确的MIME类型 */}
         {src.includes('.mkv') && <source src={src} type="video/x-matroska" />}
@@ -191,13 +464,223 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
         {src.includes('.webm') && <source src={src} type="video/webm" />}
         {src.includes('.mov') && <source src={src} type="video/quicktime" />}
         {src.includes('.avi') && <source src={src} type="video/x-msvideo" />}
-
+        
         {/* 通用fallback */}
         <source src={src} type="video/mp4" />
         <source src={src} type="video/webm" />
         <source src={src} type="video/ogg" />
         您的浏览器不支持视频播放。
       </video>
+
+      {/* 弹幕容器 */}
+      <div 
+        ref={danmakuContainerRef}
+        className="absolute inset-0 pointer-events-none overflow-hidden"
+        style={{ zIndex: 10 }}
+      />
+
+      {/* 播放/暂停中央按钮 */}
+      {!isPlaying && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 transition-opacity">
+          <button
+            onClick={togglePlay}
+            className="w-20 h-20 bg-black bg-opacity-60 rounded-full flex items-center justify-center hover:bg-opacity-80 transition-all transform hover:scale-110"
+          >
+            <Play className="w-10 h-10 text-white ml-1" fill="white" />
+          </button>
+        </div>
+      )}
+
+      {/* 控制栏 */}
+      <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-all duration-300 ${
+        showControls || !isPlaying ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+      }`} style={{ zIndex: 20 }}>
+        
+        {/* 进度条 */}
+        <div className="mb-4">
+          <div 
+            className="w-full h-1 bg-gray-600 rounded cursor-pointer hover:h-2 transition-all"
+            onClick={handleProgressClick}
+          >
+            <div 
+              className="h-full bg-blue-500 rounded transition-all"
+              style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+            />
+          </div>
+        </div>
+
+        {/* 主控制栏 */}
+        <div className="flex items-center justify-between">
+          {/* 左侧控制 */}
+          <div className="flex items-center gap-3">
+            <button onClick={togglePlay} className="text-white hover:text-blue-400 transition-colors">
+              {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" fill="white" />}
+            </button>
+            
+            <button onClick={() => handleSkip(-10)} className="text-white hover:text-blue-400 transition-colors">
+              <SkipBack className="w-5 h-5" />
+            </button>
+            
+            <button onClick={() => handleSkip(10)} className="text-white hover:text-blue-400 transition-colors">
+              <SkipForward className="w-5 h-5" />
+            </button>
+
+            {/* 音量控制 */}
+            <div className="flex items-center gap-2">
+              <button onClick={toggleMute} className="text-white hover:text-blue-400 transition-colors">
+                {isMuted || volume === 0 ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+              </button>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={isMuted ? 0 : volume}
+                onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                className="w-20 h-1 bg-gray-600 rounded appearance-none cursor-pointer slider"
+              />
+            </div>
+
+            {/* 时间显示 */}
+            <span className="text-white text-sm">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </span>
+          </div>
+
+          {/* 右侧控制 */}
+          <div className="flex items-center gap-3">
+            {/* 弹幕控制 */}
+            <button
+              onClick={() => setShowDanmakuInput(true)}
+              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
+              title="发送弹幕"
+            >
+              弹
+            </button>
+            
+            <button
+              onClick={() => setDanmakuSettings(prev => ({ ...prev, enabled: !prev.enabled }))}
+              className={`px-3 py-1 rounded text-sm transition-colors ${
+                danmakuSettings.enabled 
+                  ? 'bg-green-600 hover:bg-green-700 text-white' 
+                  : 'bg-gray-600 hover:bg-gray-500 text-gray-300'
+              }`}
+              title={danmakuSettings.enabled ? '关闭弹幕' : '开启弹幕'}
+            >
+              弹幕
+            </button>
+
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="text-white hover:text-blue-400 transition-colors"
+              title="弹幕设置"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+
+            <button onClick={toggleFullscreen} className="text-white hover:text-blue-400 transition-colors">
+              <Maximize className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* 弹幕输入框 */}
+        {showDanmakuInput && (
+          <div className="mt-3 flex items-center gap-2 bg-black bg-opacity-60 rounded-lg p-2">
+            <input
+              type="text"
+              value={newDanmaku}
+              onChange={(e) => setNewDanmaku(e.target.value)}
+              placeholder="输入弹幕内容..."
+              className="flex-1 bg-transparent text-white placeholder-gray-400 outline-none"
+              maxLength={100}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  sendDanmaku()
+                } else if (e.key === 'Escape') {
+                  setShowDanmakuInput(false)
+                  setNewDanmaku('')
+                }
+              }}
+              autoFocus
+            />
+            <button
+              onClick={sendDanmaku}
+              disabled={!newDanmaku.trim()}
+              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded text-sm transition-colors"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => {
+                setShowDanmakuInput(false)
+                setNewDanmaku('')
+              }}
+              className="px-2 py-1 text-gray-400 hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* 弹幕设置面板 */}
+        {showSettings && (
+          <div className="absolute bottom-full right-0 mb-2 bg-black bg-opacity-90 text-white p-4 rounded-lg w-64">
+            <h3 className="text-sm font-semibold mb-3">弹幕设置</h3>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-gray-300 mb-1">不透明度</label>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="1"
+                  step="0.1"
+                  value={danmakuSettings.opacity}
+                  onChange={(e) => setDanmakuSettings(prev => ({ ...prev, opacity: parseFloat(e.target.value) }))}
+                  className="w-full"
+                />
+                <span className="text-xs text-gray-400">{Math.round(danmakuSettings.opacity * 100)}%</span>
+              </div>
+              
+              <div>
+                <label className="block text-xs text-gray-300 mb-1">字体大小</label>
+                <input
+                  type="range"
+                  min="12"
+                  max="24"
+                  step="2"
+                  value={danmakuSettings.fontSize}
+                  onChange={(e) => setDanmakuSettings(prev => ({ ...prev, fontSize: parseInt(e.target.value) }))}
+                  className="w-full"
+                />
+                <span className="text-xs text-gray-400">{danmakuSettings.fontSize}px</span>
+              </div>
+              
+              <div>
+                <label className="block text-xs text-gray-300 mb-1">滚动速度</label>
+                <input
+                  type="range"
+                  min="5"
+                  max="15"
+                  step="1"
+                  value={danmakuSettings.speed}
+                  onChange={(e) => setDanmakuSettings(prev => ({ ...prev, speed: parseInt(e.target.value) }))}
+                  className="w-full"
+                />
+                <span className="text-xs text-gray-400">{danmakuSettings.speed}秒</span>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => setShowSettings(false)}
+              className="mt-3 px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded text-xs transition-colors"
+            >
+              关闭
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* 加载状态 */}
       {isLoading && (

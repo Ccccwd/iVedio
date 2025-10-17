@@ -18,7 +18,10 @@ function VideoCard({ video }: VideoCardProps) {
     return `${minutes}:${secs.toString().padStart(2, '0')}`
   }
 
-  const formatViews = (views: number) => {
+  const formatViews = (views: number | undefined) => {
+    if (!views || views === 0) {
+      return '0'
+    }
     if (views >= 1000000) {
       return `${(views / 1000000).toFixed(1)}M`
     }

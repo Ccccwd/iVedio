@@ -2,6 +2,8 @@ import User from './User';
 import Video from './Video';
 import WatchHistory from './WatchHistory';
 import Favorite from './Favorite';
+import Comment from './Comment';
+import Danmaku from './Danmaku';
 
 // 定义模型关系
 export function initializeModels() {
@@ -61,6 +63,59 @@ export function initializeModels() {
     otherKey: 'userId',
     as: 'favoritedByUsers'
   });
+
+  // 用户评论
+  User.hasMany(Comment, {
+    foreignKey: 'userId',
+    as: 'comments'
+  });
+
+  Comment.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user'
+  });
+
+  Video.hasMany(Comment, {
+    foreignKey: 'videoId',
+    as: 'comments'
+  });
+
+  Comment.belongsTo(Video, {
+    foreignKey: 'videoId',
+    as: 'video'
+  });
+
+  // 评论回复（自关联）
+  Comment.hasMany(Comment, {
+    foreignKey: 'parentId',
+    as: 'replies'
+  });
+
+  Comment.belongsTo(Comment, {
+    foreignKey: 'parentId',
+    as: 'parent'
+  });
+
+  // 用户弹幕
+  User.hasMany(Danmaku, {
+    foreignKey: 'userId',
+    as: 'danmakus'
+  });
+
+  Danmaku.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user'
+  });
+
+  Video.hasMany(Danmaku, {
+    foreignKey: 'videoId',
+    as: 'danmakus'
+  });
+
+  Danmaku.belongsTo(Video, {
+    foreignKey: 'videoId',
+    as: 'video'
+  });
 }
 
-export { User, Video, WatchHistory, Favorite };
+export { User, Video, WatchHistory, Favorite, Comment, Danmaku };

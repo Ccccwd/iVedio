@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { User, Play, Heart, Clock, Settings } from 'lucide-react';
 import VideoCard from '../components/VideoCard';
+import { getCurrentUser, mockLogin } from '../utils/auth';
+import type { Video } from '@shared/types';
 
 interface UserProfile {
   id: number;
@@ -27,7 +29,7 @@ interface WatchHistoryItem {
 interface FavoriteItem {
   id: number;
   createdAt: string;
-  video: any;
+  video: Video;
 }
 
 const ProfilePage: React.FC = () => {
@@ -45,9 +47,14 @@ const ProfilePage: React.FC = () => {
   const loadUserData = async () => {
     try {
       setLoading(true);
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
       
-      if (!userData.id) {
+      // 确保用户已登录
+      let userData = getCurrentUser();
+      if (!userData) {
+        userData = await mockLogin('cwd');
+      }
+      
+      if (!userData) {
         setError('请先登录');
         return;
       }
@@ -55,19 +62,43 @@ const ProfilePage: React.FC = () => {
       setUserProfile(userData);
 
       // 加载观看历史
+      console.log('正在加载观看历史，用户ID:', userData.id);
       const historyResponse = await fetch(`http://localhost:3001/api/users/history/${userData.id}`);
       const historyResult = await historyResponse.json();
+      console.log('观看历史响应:', historyResult);
       
       if (historyResult.success) {
-        setWatchHistory(historyResult.data.history);
+        setWatchHistory(historyResult.data.history || []);
+      } else {
+        console.warn('获取观看历史失败:', historyResult.message);
       }
 
       // 加载收藏列表
-      const favoritesResponse = await fetch(`http://localhost:3001/api/users/favorites/${userData.id}`);
+      console.log('正在加载收藏列表，用户ID:', userData.id);
+      const favoritesResponse = await fetch(`http://localhost:3001/api/favorites/user/${userData.id}`);
       const favoritesResult = await favoritesResponse.json();
+      console.log('收藏列表响应:', favoritesResult);
       
       if (favoritesResult.success) {
-        setFavorites(favoritesResult.data.favorites);
+        // 转换数据格式以符合Video接口
+        const transformedFavorites = favoritesResult.data.favorites.map((fav: any) => ({
+          ...fav,
+          video: {
+            ...fav.video,
+            id: fav.video.id.toString(), // 确保id是字符串
+            views: fav.video.views || 0,
+            tags: fav.video.tags ? (typeof fav.video.tags === 'string' ? JSON.parse(fav.video.tags) : fav.video.tags) : [],
+            uploadDate: fav.video.uploadDate || fav.video.releaseDate || new Date().toISOString(),
+            thumbnail: fav.video.thumbnail || fav.video.posterUrl || '',
+            description: fav.video.description || '',
+            videoUrl: fav.video.videoUrl || '',
+            duration: fav.video.duration || 0,
+            category: fav.video.category || '未分类'
+          }
+        }));
+        setFavorites(transformedFavorites);
+      } else {
+        console.warn('获取收藏列表失败:', favoritesResult.message);
       }
 
     } catch (error) {

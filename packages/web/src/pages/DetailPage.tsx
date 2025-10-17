@@ -1,9 +1,12 @@
 import type { Video } from '@shared/types'
-import { ArrowLeft, Calendar, Eye, Tag } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { ArrowLeft, Calendar, Eye, Tag, MessageCircle, Share2, ThumbsUp } from 'lucide-react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import VideoCard from '../components/VideoCard'
 import VideoPlayer from '../components/VideoPlayer'
+import FavoriteButton from '../components/FavoriteButton'
+import CommentSection from '../components/CommentSection'
+import { getCurrentUser, mockLogin } from '../utils/auth'
 
 function DetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -12,6 +15,23 @@ function DetailPage() {
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isMinimized, setIsMinimized] = useState(false)
+  const [currentUser, setCurrentUser] = useState(getCurrentUser())
+  const commentsRef = useRef<HTMLDivElement>(null)
+
+  // 确保用户已登录
+  useEffect(() => {
+    const ensureUserLogin = async () => {
+      let user = getCurrentUser()
+      if (!user) {
+        // 如果没有登录用户，使用默认用户进行模拟登录
+        user = await mockLogin('cwd')
+        setCurrentUser(user)
+      }
+    }
+    
+    ensureUserLogin()
+  }, [])
 
   useEffect(() => {
     const fetchVideoData = async () => {
@@ -69,6 +89,24 @@ function DetailPage() {
 
     fetchVideoData()
   }, [id])
+
+  // 滚动到评论区
+  const handleScrollToComments = () => {
+    setIsMinimized(true) // 最小化视频播放器
+    commentsRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  // 格式化时长
+  const formatDuration = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+    
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+    }
+    return `${minutes}:${secs.toString().padStart(2, '0')}`
+  }
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
@@ -147,59 +185,139 @@ function DetailPage() {
         </div>
       </div>
 
-      {/* 视频播放器 */}
-      <div className="max-w-6xl">
-        <VideoPlayer
-          src={video.videoUrl}
-          poster={video.thumbnail}
-          videoId={video.id}
-        />
+      {/* 主要内容区域 */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* 左侧：视频播放器和信息 */}
+        <div className="lg:col-span-3 space-y-6">
+          {/* 视频播放器 */}
+          <div className={`transition-all duration-300 ${isMinimized ? 'fixed top-4 right-4 w-80 h-48 z-50 shadow-2xl rounded-lg overflow-hidden' : 'w-full'}`}>
+            <VideoPlayer
+              src={video.videoUrl}
+              poster={video.thumbnail}
+              videoId={video.id}
+            />
+            {isMinimized && (
+              <button
+                onClick={() => setIsMinimized(false)}
+                className="absolute top-2 right-2 bg-black bg-opacity-50 text-white p-1 rounded hover:bg-opacity-75"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {/* 视频信息 */}
+          <div className="space-y-4">
+            {/* 标题 */}
+            <h1 className="text-2xl lg:text-3xl font-bold text-white">
+              {video.title}
+            </h1>
+
+            {/* 元信息和操作按钮 */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-4 text-gray-400">
+                <div className="flex items-center space-x-2">
+                  <Eye className="w-4 h-4" />
+                  <span>{formatViews(video.views)} 次播放</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>{formatDate(video.uploadDate)}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Tag className="w-4 h-4" />
+                  <span>{video.category}</span>
+                </div>
+              </div>
+
+              {/* 操作按钮 */}
+              <div className="flex items-center gap-3">
+                <button className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
+                  <ThumbsUp className="w-4 h-4" />
+                  <span>点赞</span>
+                </button>
+                <button className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
+                  <Share2 className="w-4 h-4" />
+                  <span>分享</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 标签 */}
+            <div className="flex flex-wrap gap-2">
+              {video.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="px-3 py-1 bg-background-card text-gray-300 rounded-full text-sm"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+
+            {/* 描述 */}
+            <div className="bg-background-card p-6 rounded-lg">
+              <h3 className="text-lg font-semibold text-white mb-3">
+                视频简介
+              </h3>
+              <p className="text-gray-300 leading-relaxed">
+                {video.description}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 右侧：操作面板 */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-4 space-y-4">
+            {/* 收藏按钮 */}
+            <div className="bg-background-card p-4 rounded-lg">
+              <FavoriteButton 
+                videoId={video.id} 
+                userId={currentUser?.id}
+                className="w-full"
+              />
+            </div>
+
+            {/* 评论导航 */}
+            <div className="bg-background-card p-4 rounded-lg">
+              <button
+                onClick={handleScrollToComments}
+                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                <MessageCircle className="w-5 h-5" />
+                <span>查看评论</span>
+              </button>
+            </div>
+
+            {/* 视频统计 */}
+            <div className="bg-background-card p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-white mb-3">视频数据</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">播放量：</span>
+                  <span className="text-white">{formatViews(video.views)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">时长：</span>
+                  <span className="text-white">{formatDuration(video.duration)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">分辨率：</span>
+                  <span className="text-white">1080P</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* 视频信息 */}
-      <div className="max-w-6xl space-y-4">
-        {/* 标题 */}
-        <h1 className="text-3xl font-bold text-white">
-          {video.title}
-        </h1>
-
-        {/* 元信息 */}
-        <div className="flex flex-wrap items-center gap-6 text-gray-400">
-          <div className="flex items-center space-x-2">
-            <Eye className="w-5 h-5" />
-            <span>{formatViews(video.views)} 次播放</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Calendar className="w-5 h-5" />
-            <span>{formatDate(video.uploadDate)}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Tag className="w-5 h-5" />
-            <span>{video.category}</span>
-          </div>
-        </div>
-
-        {/* 标签 */}
-        <div className="flex flex-wrap gap-2">
-          {video.tags.map((tag) => (
-            <span
-              key={tag}
-              className="px-3 py-1 bg-background-card text-gray-300 rounded-full text-sm"
-            >
-              #{tag}
-            </span>
-          ))}
-        </div>
-
-        {/* 描述 */}
-        <div className="bg-background-card p-6 rounded-lg">
-          <h3 className="text-lg font-semibold text-white mb-3">
-            视频简介
-          </h3>
-          <p className="text-gray-300 leading-relaxed">
-            {video.description}
-          </p>
-        </div>
+      {/* 评论区 */}
+      <div ref={commentsRef}>
+        <CommentSection 
+          videoId={video.id} 
+          userId={currentUser?.id}
+        />
       </div>
 
       {/* 相关推荐 */}

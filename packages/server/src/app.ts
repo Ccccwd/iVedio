@@ -9,6 +9,9 @@ import { initializeDatabase, checkDatabaseHealth } from './config/init';
 import authRoutes from './routes/auth';
 import videoRoutes from './routes/video';
 import userRoutes from './routes/user';
+import commentRoutes from './routes/comment';
+import danmakuRoutes from './routes/danmaku';
+import favoriteRoutes from './routes/favorite';
 import { errorHandler } from './middleware/errorHandler';
 
 // 加载环境变量
@@ -31,6 +34,12 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/danmakus', danmakuRoutes);
+app.use('/api/favorites', favoriteRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/danmakus', danmakuRoutes);
+app.use('/api/favorites', favoriteRoutes);
 
 // 健康检查
 app.get('/health', async (req, res) => {
