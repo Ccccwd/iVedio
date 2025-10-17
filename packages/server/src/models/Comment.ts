@@ -12,7 +12,7 @@ interface CommentAttributes {
   updatedAt: Date;
 }
 
-interface CommentCreationAttributes extends Optional<CommentAttributes, 'id' | 'parentId' | 'likes' | 'createdAt' | 'updatedAt'> {}
+interface CommentCreationAttributes extends Optional<CommentAttributes, 'id' | 'parentId' | 'likes' | 'createdAt' | 'updatedAt'> { }
 
 class Comment extends Model<CommentAttributes, CommentCreationAttributes> implements CommentAttributes {
   public id!: number;

@@ -12,12 +12,12 @@ export const getCurrentUser = (): User | null => {
     if (!userData) {
       return null
     }
-    
+
     const user = JSON.parse(userData)
     if (!user.id || !user.username) {
       return null
     }
-    
+
     return user
   } catch (error) {
     console.error('获取当前用户失败:', error)
@@ -54,13 +54,13 @@ export const mockLogin = async (username: string = 'cwd'): Promise<User | null> 
       { id: 2, username: '111', email: '1838935684@qq.com' },
       { id: 3, username: 'cwd', email: '1838925684@qq.com' }
     ]
-    
+
     const user = users.find(u => u.username === username)
     if (user) {
       setCurrentUser(user)
       return user
     }
-    
+
     return null
   } catch (error) {
     console.error('模拟登录失败:', error)

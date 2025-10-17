@@ -1,5 +1,5 @@
-﻿import { useEffect, useRef, useState } from 'react'
-import { Send, Settings, Play, Pause, Volume2, VolumeX, Maximize, SkipBack, SkipForward } from 'lucide-react'
+﻿import { Maximize, Pause, Play, Send, Settings, SkipBack, SkipForward, Volume2, VolumeX } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import './VideoPlayer.css'
 
 interface Danmaku {
@@ -442,7 +442,7 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
   }, [src, onReady, videoId])
 
   return (
-    <div 
+    <div
       className="relative rounded-lg overflow-hidden bg-black group"
       onMouseMove={showControlsTemporarily}
       onMouseLeave={() => isPlaying && setShowControls(false)}
@@ -464,7 +464,7 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
         {src.includes('.webm') && <source src={src} type="video/webm" />}
         {src.includes('.mov') && <source src={src} type="video/quicktime" />}
         {src.includes('.avi') && <source src={src} type="video/x-msvideo" />}
-        
+
         {/* 通用fallback */}
         <source src={src} type="video/mp4" />
         <source src={src} type="video/webm" />
@@ -473,7 +473,7 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
       </video>
 
       {/* 弹幕容器 */}
-      <div 
+      <div
         ref={danmakuContainerRef}
         className="absolute inset-0 pointer-events-none overflow-hidden"
         style={{ zIndex: 10 }}
@@ -492,17 +492,16 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
       )}
 
       {/* 控制栏 */}
-      <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-all duration-300 ${
-        showControls || !isPlaying ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
-      }`} style={{ zIndex: 20 }}>
-        
+      <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-all duration-300 ${showControls || !isPlaying ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+        }`} style={{ zIndex: 20 }}>
+
         {/* 进度条 */}
         <div className="mb-4">
-          <div 
+          <div
             className="w-full h-1 bg-gray-600 rounded cursor-pointer hover:h-2 transition-all"
             onClick={handleProgressClick}
           >
-            <div 
+            <div
               className="h-full bg-blue-500 rounded transition-all"
               style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
             />
@@ -516,11 +515,11 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
             <button onClick={togglePlay} className="text-white hover:text-blue-400 transition-colors">
               {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" fill="white" />}
             </button>
-            
+
             <button onClick={() => handleSkip(-10)} className="text-white hover:text-blue-400 transition-colors">
               <SkipBack className="w-5 h-5" />
             </button>
-            
+
             <button onClick={() => handleSkip(10)} className="text-white hover:text-blue-400 transition-colors">
               <SkipForward className="w-5 h-5" />
             </button>
@@ -557,14 +556,13 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
             >
               弹
             </button>
-            
+
             <button
               onClick={() => setDanmakuSettings(prev => ({ ...prev, enabled: !prev.enabled }))}
-              className={`px-3 py-1 rounded text-sm transition-colors ${
-                danmakuSettings.enabled 
-                  ? 'bg-green-600 hover:bg-green-700 text-white' 
+              className={`px-3 py-1 rounded text-sm transition-colors ${danmakuSettings.enabled
+                  ? 'bg-green-600 hover:bg-green-700 text-white'
                   : 'bg-gray-600 hover:bg-gray-500 text-gray-300'
-              }`}
+                }`}
               title={danmakuSettings.enabled ? '关闭弹幕' : '开启弹幕'}
             >
               弹幕
@@ -627,7 +625,7 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
         {showSettings && (
           <div className="absolute bottom-full right-0 mb-2 bg-black bg-opacity-90 text-white p-4 rounded-lg w-64">
             <h3 className="text-sm font-semibold mb-3">弹幕设置</h3>
-            
+
             <div className="space-y-3">
               <div>
                 <label className="block text-xs text-gray-300 mb-1">不透明度</label>
@@ -642,7 +640,7 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
                 />
                 <span className="text-xs text-gray-400">{Math.round(danmakuSettings.opacity * 100)}%</span>
               </div>
-              
+
               <div>
                 <label className="block text-xs text-gray-300 mb-1">字体大小</label>
                 <input
@@ -656,7 +654,7 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
                 />
                 <span className="text-xs text-gray-400">{danmakuSettings.fontSize}px</span>
               </div>
-              
+
               <div>
                 <label className="block text-xs text-gray-300 mb-1">滚动速度</label>
                 <input
@@ -671,7 +669,7 @@ function VideoPlayer({ src, poster, videoId, onReady }: VideoPlayerProps) {
                 <span className="text-xs text-gray-400">{danmakuSettings.speed}秒</span>
               </div>
             </div>
-            
+
             <button
               onClick={() => setShowSettings(false)}
               className="mt-3 px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded text-xs transition-colors"

@@ -1,5 +1,5 @@
 import { Heart } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 interface FavoriteButtonProps {
   videoId: string
@@ -29,7 +29,7 @@ function FavoriteButton({ videoId, userId, className = '' }: FavoriteButtonProps
   useEffect(() => {
     const checkFavoriteStatus = async () => {
       if (!currentUserId) return
-      
+
       try {
         const response = await fetch(`http://localhost:3001/api/favorites/check/${currentUserId}/${videoId}`)
         const result = await response.json()
@@ -78,11 +78,10 @@ function FavoriteButton({ videoId, userId, className = '' }: FavoriteButtonProps
     <button
       onClick={handleToggleFavorite}
       disabled={loading}
-      className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-lg transition-colors disabled:opacity-50 ${
-        isFavorited
+      className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-lg transition-colors disabled:opacity-50 ${isFavorited
           ? 'bg-red-600 hover:bg-red-700 text-white'
           : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-      } ${className}`}
+        } ${className}`}
     >
       <Heart className={`w-5 h-5 ${isFavorited ? 'fill-current' : ''}`} />
       <span>

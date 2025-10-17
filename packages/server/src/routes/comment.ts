@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { Comment, User } from '../models';
 import { Op } from 'sequelize';
+import { Comment, User } from '../models';
 
 const router = Router();
 
@@ -11,7 +11,7 @@ router.get('/video/:videoId', async (req, res) => {
     const { page = 1, limit = 20, sortBy = 'latest' } = req.query;
 
     const offset = (Number(page) - 1) * Number(limit);
-    
+
     // 根据排序方式设置排序规则
     let order: any[];
     switch (sortBy) {
@@ -131,7 +131,7 @@ router.post('/', async (req, res) => {
 router.put('/:id/like', async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const comment = await Comment.findByPk(id);
     if (!comment) {
       return res.status(404).json({

@@ -13,7 +13,7 @@ interface DanmakuAttributes {
   createdAt: Date;
 }
 
-interface DanmakuCreationAttributes extends Optional<DanmakuAttributes, 'id' | 'color' | 'type' | 'fontSize' | 'createdAt'> {}
+interface DanmakuCreationAttributes extends Optional<DanmakuAttributes, 'id' | 'color' | 'type' | 'fontSize' | 'createdAt'> { }
 
 class Danmaku extends Model<DanmakuAttributes, DanmakuCreationAttributes> implements DanmakuAttributes {
   public id!: number;

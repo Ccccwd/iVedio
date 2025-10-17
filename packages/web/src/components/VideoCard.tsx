@@ -1,7 +1,7 @@
-import { useNavigate } from 'react-router-dom'
-import { Play, Eye } from 'lucide-react'
-import { useState } from 'react'
 import type { Video } from '@shared/types'
+import { Eye, Play } from 'lucide-react'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 interface VideoCardProps {
   video: Video
@@ -57,7 +57,7 @@ function VideoCard({ video }: VideoCardProps) {
             <div className="animate-spin w-6 h-6 border-2 border-gray-600 border-t-gray-400 rounded-full"></div>
           </div>
         )}
-        
+
         {imageError ? (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-800 text-gray-400">
             <div className="text-center">
@@ -69,19 +69,18 @@ function VideoCard({ video }: VideoCardProps) {
           <img
             src={video.thumbnail}
             alt={video.title}
-            className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 ${
-              imageLoading ? 'opacity-0' : 'opacity-100'
-            }`}
+            className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'
+              }`}
             onLoad={handleImageLoad}
             onError={handleImageError}
           />
         )}
-        
+
         {/* Duration Badge */}
         <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded text-xs text-white">
           {formatDuration(video.duration)}
         </div>
-        
+
         {/* Play Overlay */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <Play className="w-12 h-12 text-white" fill="white" />

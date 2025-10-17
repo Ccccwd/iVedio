@@ -1,5 +1,5 @@
-import { MessageCircle, ThumbsUp, Reply, Send } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { MessageCircle, Reply, Send, ThumbsUp } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface Comment {
   id: number
@@ -175,36 +175,36 @@ function CommentSection({ videoId, userId }: CommentSectionProps) {
         </div>
       </div>
 
-        {/* 发布评论 */}
-        {currentUserId ? (
-          <div className="bg-background-card p-4 rounded-lg">
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="写下你的评论..."
-              className="w-full bg-gray-700 text-white placeholder-gray-400 p-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={3}
-              maxLength={1000}
-            />
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-gray-400 text-sm">
-                {newComment.length}/1000
-              </span>
-              <button
-                onClick={handleSubmitComment}
-                disabled={!newComment.trim()}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded-lg transition-colors"
-              >
-                <Send className="w-4 h-4" />
-                发布
-              </button>
-            </div>
+      {/* 发布评论 */}
+      {currentUserId ? (
+        <div className="bg-background-card p-4 rounded-lg">
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="写下你的评论..."
+            className="w-full bg-gray-700 text-white placeholder-gray-400 p-3 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={3}
+            maxLength={1000}
+          />
+          <div className="flex items-center justify-between mt-3">
+            <span className="text-gray-400 text-sm">
+              {newComment.length}/1000
+            </span>
+            <button
+              onClick={handleSubmitComment}
+              disabled={!newComment.trim()}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded-lg transition-colors"
+            >
+              <Send className="w-4 h-4" />
+              发布
+            </button>
           </div>
-        ) : (
-          <div className="bg-background-card p-4 rounded-lg text-center">
-            <p className="text-gray-400">请先登录后再发表评论</p>
-          </div>
-        )}      {/* 评论列表 */}
+        </div>
+      ) : (
+        <div className="bg-background-card p-4 rounded-lg text-center">
+          <p className="text-gray-400">请先登录后再发表评论</p>
+        </div>
+      )}      {/* 评论列表 */}
       {loading ? (
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
@@ -230,7 +230,7 @@ function CommentSection({ videoId, userId }: CommentSectionProps) {
                     <span className="text-gray-400 text-sm">{formatTimeAgo(comment.createdAt)}</span>
                   </div>
                   <p className="text-gray-300 mb-3">{comment.content}</p>
-                  
+
                   {/* 评论操作 */}
                   <div className="flex items-center gap-4">
                     <button

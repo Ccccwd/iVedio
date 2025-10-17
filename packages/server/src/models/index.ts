@@ -1,9 +1,9 @@
+import Comment from './Comment';
+import Danmaku from './Danmaku';
+import Favorite from './Favorite';
 import User from './User';
 import Video from './Video';
 import WatchHistory from './WatchHistory';
-import Favorite from './Favorite';
-import Comment from './Comment';
-import Danmaku from './Danmaku';
 
 // 定义模型关系
 export function initializeModels() {
@@ -118,4 +118,4 @@ export function initializeModels() {
   });
 }
 
-export { User, Video, WatchHistory, Favorite, Comment, Danmaku };
+export { Comment, Danmaku, Favorite, User, Video, WatchHistory };

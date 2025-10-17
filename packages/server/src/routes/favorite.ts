@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { Favorite, Video, User } from '../models';
+import { Favorite, Video } from '../models';
 
 const router = Router();
 
@@ -20,9 +20,9 @@ router.get('/user/:userId', async (req, res) => {
           model: Video,
           as: 'video',
           attributes: [
-            'id', 'title', 'description', 'thumbnail', 'posterUrl', 
-            'videoUrl', 'previewVideoUrl', 'duration', 'views', 
-            'category', 'tags', 'uploadDate', 'releaseDate', 
+            'id', 'title', 'description', 'thumbnail', 'posterUrl',
+            'videoUrl', 'previewVideoUrl', 'duration', 'views',
+            'category', 'tags', 'uploadDate', 'releaseDate',
             'director', 'actors', 'rating', 'quality', 'isVip'
           ]
         }

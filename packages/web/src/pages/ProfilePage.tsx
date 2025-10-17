@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { User, Play, Heart, Clock, Settings } from 'lucide-react';
+import type { Video } from '@shared/types';
+import { Clock, Heart, Play, User } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import VideoCard from '../components/VideoCard';
 import { getCurrentUser, mockLogin } from '../utils/auth';
-import type { Video } from '@shared/types';
 
 interface UserProfile {
   id: number;
@@ -47,13 +47,13 @@ const ProfilePage: React.FC = () => {
   const loadUserData = async () => {
     try {
       setLoading(true);
-      
+
       // 确保用户已登录
       let userData = getCurrentUser();
       if (!userData) {
         userData = await mockLogin('cwd');
       }
-      
+
       if (!userData) {
         setError('请先登录');
         return;
@@ -66,7 +66,7 @@ const ProfilePage: React.FC = () => {
       const historyResponse = await fetch(`http://localhost:3001/api/users/history/${userData.id}`);
       const historyResult = await historyResponse.json();
       console.log('观看历史响应:', historyResult);
-      
+
       if (historyResult.success) {
         setWatchHistory(historyResult.data.history || []);
       } else {
@@ -78,7 +78,7 @@ const ProfilePage: React.FC = () => {
       const favoritesResponse = await fetch(`http://localhost:3001/api/favorites/user/${userData.id}`);
       const favoritesResult = await favoritesResponse.json();
       console.log('收藏列表响应:', favoritesResult);
-      
+
       if (favoritesResult.success) {
         // 转换数据格式以符合Video接口
         const transformedFavorites = favoritesResult.data.favorites.map((fav: any) => ({
@@ -161,8 +161,8 @@ const ProfilePage: React.FC = () => {
           <div className="flex items-center space-x-4">
             <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center">
               {userProfile?.avatar ? (
-                <img 
-                  src={userProfile.avatar} 
+                <img
+                  src={userProfile.avatar}
                   alt={userProfile.username}
                   className="w-full h-full rounded-full object-cover"
                 />
@@ -193,22 +193,20 @@ const ProfilePage: React.FC = () => {
         <div className="flex space-x-1 mb-6">
           <button
             onClick={() => setActiveTab('history')}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-              activeTab === 'history'
+            className={`px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'history'
                 ? 'bg-primary text-white'
                 : 'bg-background-card text-gray-400 hover:text-white'
-            }`}
+              }`}
           >
             <Clock className="w-5 h-5 inline mr-2" />
             观看历史
           </button>
           <button
             onClick={() => setActiveTab('favorites')}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-              activeTab === 'favorites'
+            className={`px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'favorites'
                 ? 'bg-primary text-white'
                 : 'bg-background-card text-gray-400 hover:text-white'
-            }`}
+              }`}
           >
             <Heart className="w-5 h-5 inline mr-2" />
             我的收藏

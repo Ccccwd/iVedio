@@ -1,11 +1,11 @@
 import type { Video } from '@shared/types'
-import { ArrowLeft, Calendar, Eye, Tag, MessageCircle, Share2, ThumbsUp } from 'lucide-react'
-import { useEffect, useState, useRef } from 'react'
+import { ArrowLeft, Calendar, Eye, MessageCircle, Share2, Tag, ThumbsUp } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import CommentSection from '../components/CommentSection'
+import FavoriteButton from '../components/FavoriteButton'
 import VideoCard from '../components/VideoCard'
 import VideoPlayer from '../components/VideoPlayer'
-import FavoriteButton from '../components/FavoriteButton'
-import CommentSection from '../components/CommentSection'
 import { getCurrentUser, mockLogin } from '../utils/auth'
 
 function DetailPage() {
@@ -29,7 +29,7 @@ function DetailPage() {
         setCurrentUser(user)
       }
     }
-    
+
     ensureUserLogin()
   }, [])
 
@@ -101,7 +101,7 @@ function DetailPage() {
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
     const secs = seconds % 60
-    
+
     if (hours > 0) {
       return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
     }
@@ -272,8 +272,8 @@ function DetailPage() {
           <div className="sticky top-4 space-y-4">
             {/* 收藏按钮 */}
             <div className="bg-background-card p-4 rounded-lg">
-              <FavoriteButton 
-                videoId={video.id} 
+              <FavoriteButton
+                videoId={video.id}
                 userId={currentUser?.id}
                 className="w-full"
               />
@@ -314,8 +314,8 @@ function DetailPage() {
 
       {/* 评论区 */}
       <div ref={commentsRef}>
-        <CommentSection 
-          videoId={video.id} 
+        <CommentSection
+          videoId={video.id}
           userId={currentUser?.id}
         />
       </div>

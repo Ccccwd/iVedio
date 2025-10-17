@@ -1,18 +1,17 @@
-import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
-import { sequelize } from './config/database';
+import { checkDatabaseHealth, initializeDatabase } from './config/init';
+import { errorHandler } from './middleware/errorHandler';
 import { initializeModels } from './models';
-import { initializeDatabase, checkDatabaseHealth } from './config/init';
 import authRoutes from './routes/auth';
-import videoRoutes from './routes/video';
-import userRoutes from './routes/user';
 import commentRoutes from './routes/comment';
 import danmakuRoutes from './routes/danmaku';
 import favoriteRoutes from './routes/favorite';
-import { errorHandler } from './middleware/errorHandler';
+import userRoutes from './routes/user';
+import videoRoutes from './routes/video';
 
 // 加载环境变量
 dotenv.config();
@@ -44,8 +43,8 @@ app.use('/api/favorites', favoriteRoutes);
 // 健康检查
 app.get('/health', async (req, res) => {
   const dbHealth = await checkDatabaseHealth();
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     timestamp: new Date().toISOString(),
     service: 'iVedio API Server',
     database: dbHealth,
@@ -61,10 +60,10 @@ app.use(errorHandler);
 async function startServer() {
   try {
     console.log('🚀 启动 iVedio API 服务器...');
-    
+
     // 初始化模型
     initializeModels();
-    
+
     // 初始化数据库（包含连接测试、表创建、默认数据）
     await initializeDatabase();
 

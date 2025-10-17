@@ -17,7 +17,7 @@ async function createNewTables() {
     console.log('✅ Favorite 表检查完成');
 
     console.log('🎉 所有表创建完成！');
-    
+
     // 检查表结构
     const [commentResults] = await sequelize.query("PRAGMA table_info(comments);");
     console.log('Comment 表结构:', commentResults);
