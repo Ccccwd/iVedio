@@ -277,10 +277,10 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
     const rect = e.currentTarget.getBoundingClientRect()
     const clickX = e.clientX - rect.left
     const newTime = (clickX / rect.width) * duration
-    
+
     // 确保新时间在有效范围内
     const clampedTime = Math.max(0, Math.min(duration - 0.1, newTime))
-    
+
     try {
       video.currentTime = clampedTime
       setCurrentTime(clampedTime)
@@ -565,7 +565,7 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
 
       {/* 播放/暂停中央按钮 */}
       {!useNativeControls && !isPlaying && (
-        <div 
+        <div
           className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 transition-opacity"
           style={{ zIndex: 15 }}
         >
@@ -579,10 +579,9 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
       )}
 
       {/* 控制栏 */}
-      {!useNativeControls && <div 
-        className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-all duration-300 ${
-          showControls || !isPlaying ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
-        }`} 
+      {!useNativeControls && <div
+        className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-all duration-300 ${showControls || !isPlaying ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
+          }`}
         style={{ zIndex: 20 }}
       >
 
@@ -651,8 +650,8 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
             <button
               onClick={() => setDanmakuSettings(prev => ({ ...prev, enabled: !prev.enabled }))}
               className={`px-3 py-1 rounded text-sm transition-colors ${danmakuSettings.enabled
-                  ? 'bg-green-600 hover:bg-green-700 text-white'
-                  : 'bg-gray-600 hover:bg-gray-500 text-gray-300'
+                ? 'bg-green-600 hover:bg-green-700 text-white'
+                : 'bg-gray-600 hover:bg-gray-500 text-gray-300'
                 }`}
               title={danmakuSettings.enabled ? '关闭弹幕' : '开启弹幕'}
             >

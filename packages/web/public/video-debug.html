@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,18 +13,21 @@
             padding: 20px;
             background: #f5f5f5;
         }
+
         .container {
             background: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         video {
             width: 100%;
             max-width: 800px;
             background: black;
             margin: 20px 0;
         }
+
         .info {
             background: #f8f9fa;
             padding: 15px;
@@ -32,6 +36,7 @@
             font-family: monospace;
             font-size: 14px;
         }
+
         .error {
             background: #fee;
             color: #c00;
@@ -39,6 +44,7 @@
             border-radius: 4px;
             margin: 10px 0;
         }
+
         .log {
             background: #f0f0f0;
             padding: 10px;
@@ -49,10 +55,12 @@
             font-family: monospace;
             font-size: 12px;
         }
+
         .log-entry {
             padding: 2px 0;
             border-bottom: 1px solid #ddd;
         }
+
         button {
             padding: 10px 20px;
             margin: 5px;
@@ -62,19 +70,21 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
         button:hover {
             background: #0056b3;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🎬 视频调试工具</h1>
-        
+
         <div>
             <label for="videoUrl">视频URL:</label><br>
-            <input type="text" id="videoUrl" style="width: 80%; padding: 8px; margin: 10px 0;" 
-                   value="https://ivedio-vedio-1325747247.cos.ap-nanjing.myqcloud.com/qianyuqianxun.mp4">
+            <input type="text" id="videoUrl" style="width: 80%; padding: 8px; margin: 10px 0;"
+                value="https://ivedio-vedio-1325747247.cos.ap-nanjing.myqcloud.com/qianyuqianxun.mp4">
             <button onclick="loadVideo()">加载视频</button>
             <button onclick="clearLog()">清除日志</button>
         </div>
@@ -125,7 +135,7 @@
 
         function updateInfo() {
             if (!testVideo) return;
-            
+
             const info = `
                 URL: ${testVideo.currentSrc}
                 时长: ${testVideo.duration.toFixed(2)}秒 (${(testVideo.duration / 60).toFixed(2)}分钟)
@@ -208,4 +218,5 @@
         setInterval(updateInfo, 1000);
     </script>
 </body>
+
 </html>
