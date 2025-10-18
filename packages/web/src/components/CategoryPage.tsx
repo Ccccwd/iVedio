@@ -36,13 +36,13 @@ function CategoryPage({ category, title, description }: CategoryPageProps) {
     try {
       setLoading(true)
       const response = await fetch('http://localhost:3001/api/videos')
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      
+
       const result = await response.json()
-      
+
       if (result.success) {
         // 根据分类筛选视频
         const dbCategory = categoryMap[category]
@@ -143,8 +143,8 @@ function CategoryPage({ category, title, description }: CategoryPageProps) {
                 key={filter}
                 onClick={() => setSelectedFilter(filter)}
                 className={`px-4 py-2 rounded-full text-sm transition ${selectedFilter === filter
-                    ? 'bg-primary text-white'
-                    : 'bg-background-card text-gray-300 hover:bg-background-hover'
+                  ? 'bg-primary text-white'
+                  : 'bg-background-card text-gray-300 hover:bg-background-hover'
                   }`}
               >
                 {filter}

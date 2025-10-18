@@ -194,8 +194,8 @@ const ProfilePage: React.FC = () => {
           <button
             onClick={() => setActiveTab('history')}
             className={`px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'history'
-                ? 'bg-primary text-white'
-                : 'bg-background-card text-gray-400 hover:text-white'
+              ? 'bg-primary text-white'
+              : 'bg-background-card text-gray-400 hover:text-white'
               }`}
           >
             <Clock className="w-5 h-5 inline mr-2" />
@@ -204,8 +204,8 @@ const ProfilePage: React.FC = () => {
           <button
             onClick={() => setActiveTab('favorites')}
             className={`px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'favorites'
-                ? 'bg-primary text-white'
-                : 'bg-background-card text-gray-400 hover:text-white'
+              ? 'bg-primary text-white'
+              : 'bg-background-card text-gray-400 hover:text-white'
               }`}
           >
             <Heart className="w-5 h-5 inline mr-2" />

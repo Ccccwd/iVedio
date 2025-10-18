@@ -1,5 +1,5 @@
 import type { Video } from '@shared/types'
-import { ArrowLeft, Calendar, Eye, Heart, MessageCircle, Play, Share2, Tag, ThumbsUp } from 'lucide-react'
+import { ArrowLeft, Calendar, Eye, MessageCircle, Share2, Tag, ThumbsUp } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import CommentSection from '../components/CommentSection'
@@ -335,22 +335,20 @@ function DetailPage() {
                     <button
                       key={episode.id}
                       onClick={() => setCurrentEpisode(episode)}
-                      className={`relative group transition-all duration-200 ${
-                        currentEpisode?.id === episode.id
+                      className={`relative group transition-all duration-200 ${currentEpisode?.id === episode.id
                           ? 'transform scale-105'
                           : 'hover:scale-105'
-                      }`}
+                        }`}
                       title={episode.title}
                     >
                       {/* 按钮背景 */}
-                      <div className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${
-                        currentEpisode?.id === episode.id
+                      <div className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${currentEpisode?.id === episode.id
                           ? 'bg-blue-600 text-white'
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      }`}>
+                        }`}>
                         {episode.episodeNumber}
                       </div>
-                      
+
                       {/* VIP标记 */}
                       {episode.isVip && (
                         <div className="absolute -top-1 -right-1 bg-yellow-600 text-white text-xs px-1.5 py-0.5 rounded-full font-bold shadow-lg">

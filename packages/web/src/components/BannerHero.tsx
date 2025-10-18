@@ -37,22 +37,22 @@ export default function BannerHero({ videos, autoPlayDelay = 4000 }: BannerHeroP
     // 切换视频
     const handleVideoSwitch = (index: number) => {
         if (index === currentIndex) return
-        
+
         // 停止当前视频
         if (videoRef.current) {
             videoRef.current.pause()
             videoRef.current.currentTime = 0
         }
-        
+
         // 重置状态
         setIsVideoPlaying(false)
         setHasError(false)
         setIsVideoLoaded(false)
         setShowPlayButton(true)
-        
+
         // 切换到新视频
         setCurrentIndex(index)
-        
+
         // 清除旧的定时器
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current)
@@ -243,11 +243,10 @@ export default function BannerHero({ videos, autoPlayDelay = 4000 }: BannerHeroP
                     <button
                         key={video.id}
                         onClick={() => handleVideoSwitch(index)}
-                        className={`relative group transition-all duration-300 rounded-lg overflow-hidden ${
-                            currentIndex === index 
-                                ? 'scale-110 ring-4 ring-white shadow-2xl' 
+                        className={`relative group transition-all duration-300 rounded-lg overflow-hidden ${currentIndex === index
+                                ? 'scale-110 ring-4 ring-white shadow-2xl'
                                 : 'scale-100 opacity-60 hover:opacity-100 hover:scale-105'
-                        }`}
+                            }`}
                     >
                         <img
                             src={video.posterUrl}
@@ -255,16 +254,15 @@ export default function BannerHero({ videos, autoPlayDelay = 4000 }: BannerHeroP
                             className="w-24 h-36 object-cover"
                         />
                         {/* 遮罩层 */}
-                        <div className={`absolute inset-0 bg-black transition-opacity ${
-                            currentIndex === index ? 'opacity-0' : 'opacity-30 group-hover:opacity-0'
-                        }`}></div>
-                        
+                        <div className={`absolute inset-0 bg-black transition-opacity ${currentIndex === index ? 'opacity-0' : 'opacity-30 group-hover:opacity-0'
+                            }`}></div>
+
                         {/* 悬浮提示 */}
                         <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/90 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
                             {video.title}
                             <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/90"></div>
                         </div>
-                        
+
                         {/* 当前选中指示器 */}
                         {currentIndex === index && (
                             <div className="absolute inset-0 border-4 border-white rounded-lg pointer-events-none"></div>
