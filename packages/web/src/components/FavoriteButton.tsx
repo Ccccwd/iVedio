@@ -64,17 +64,17 @@ function FavoriteButton({ videoId, userId, className = '', onFavoriteChange }: F
 
       const result = await response.json()
       console.log('收藏操作结果:', result)
-      
+
       if (result.success) {
         const newFavoritedState = result.data.isFavorited
         console.log('更新收藏状态:', newFavoritedState)
         setIsFavorited(newFavoritedState)
-        
+
         // 通知父组件或外部回调函数
         if (onFavoriteChange) {
           onFavoriteChange(newFavoritedState)
         }
-        
+
         // 触发自定义事件，用于全局通知
         const event = new CustomEvent('favoriteChanged', {
           detail: { videoId: parseInt(videoId), isFavorited: newFavoritedState, timestamp: Date.now() }

@@ -1,30 +1,28 @@
 import { sequelize } from '../config/database';
+import { initializeModels } from '../models';
 import User from '../models/User';
 import Video from '../models/Video';
-import WatchHistory from '../models/WatchHistory';
-import Favorite from '../models/Favorite';
-import { initializeModels } from '../models';
 
 // 数据库初始化函数
 export async function initializeDatabase() {
   try {
     console.log(' 正在初始化数据库...');
-    
+
     // 初始化模型关联关系
     initializeModels();
     console.log(' 模型关联初始化完成');
-    
+
     // 测试数据库连接
     await sequelize.authenticate();
     console.log(' 数据库连接成功');
-    
+
     // 同步所有模型到数据库（创建表）
     await sequelize.sync({ force: false });
     console.log(' 数据库表同步完成');
-    
+
     // 检查是否需要创建默认数据
     await createDefaultData();
-    
+
     console.log(' 数据库初始化完成！');
   } catch (error) {
     console.error(' 数据库初始化失败:', error);
@@ -46,11 +44,11 @@ async function createDefaultData() {
       });
       console.log(' 默认管理员用户创建完成');
     }
-    
+
     // 检查是否已有视频数据
     const videoCount = await Video.count();
     console.log(` 当前数据库中有 ${videoCount} 个视频`);
-    
+
     // 不再自动创建示例视频数据
     // 用户可以通过管理接口或脚本手动添加真实视频
     if (videoCount === 0) {
@@ -67,7 +65,7 @@ export async function checkDatabaseHealth() {
     await sequelize.authenticate();
     const userCount = await User.count();
     const videoCount = await Video.count();
-    
+
     return {
       status: 'healthy',
       connection: true,

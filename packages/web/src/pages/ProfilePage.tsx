@@ -43,7 +43,7 @@ const ProfilePage: React.FC = () => {
 
   useEffect(() => {
     loadUserData();
-    
+
     // 监听收藏变化事件
     const handleFavoriteChange = (event: Event) => {
       const customEvent = event as CustomEvent;
@@ -52,10 +52,10 @@ const ProfilePage: React.FC = () => {
       // 修改refreshTrigger来触发下一个useEffect
       setRefreshTrigger(prev => prev + 1);
     };
-    
+
     window.addEventListener('favoriteChanged', handleFavoriteChange);
     console.log('ProfilePage: 已注册favoriteChanged事件监听器');
-    
+
     return () => {
       window.removeEventListener('favoriteChanged', handleFavoriteChange);
       console.log('ProfilePage: 已移除favoriteChanged事件监听器');

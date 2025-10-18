@@ -312,15 +312,15 @@ function DetailPage() {
                       key={episode.id}
                       onClick={() => setCurrentEpisode(episode)}
                       className={`relative group transition-all duration-200 ${currentEpisode?.id === episode.id
-                          ? 'transform scale-105'
-                          : 'hover:scale-105'
+                        ? 'transform scale-105'
+                        : 'hover:scale-105'
                         }`}
                       title={episode.title}
                     >
                       {/* 按钮背景 */}
                       <div className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${currentEpisode?.id === episode.id
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                         }`}>
                         {episode.episodeNumber}
                       </div>
