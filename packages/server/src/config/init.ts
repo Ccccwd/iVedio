@@ -3,11 +3,16 @@ import User from '../models/User';
 import Video from '../models/Video';
 import WatchHistory from '../models/WatchHistory';
 import Favorite from '../models/Favorite';
+import { initializeModels } from '../models';
 
 // 数据库初始化函数
 export async function initializeDatabase() {
   try {
     console.log(' 正在初始化数据库...');
+    
+    // 初始化模型关联关系
+    initializeModels();
+    console.log(' 模型关联初始化完成');
     
     // 测试数据库连接
     await sequelize.authenticate();

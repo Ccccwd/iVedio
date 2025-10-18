@@ -5,7 +5,6 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { checkDatabaseHealth, initializeDatabase } from './config/init';
 import { errorHandler } from './middleware/errorHandler';
-import { initializeModels } from './models';
 import authRoutes from './routes/auth';
 import commentRoutes from './routes/comment';
 import danmakuRoutes from './routes/danmaku';
@@ -60,17 +59,14 @@ async function startServer() {
   try {
     console.log('🚀 启动 iVedio API 服务器...');
 
-    // 初始化模型
-    initializeModels();
-
-    // 初始化数据库（包含连接测试、表创建、默认数据）
+    // 初始化数据库（包含模型关联、连接测试、表创建、默认数据）
     await initializeDatabase();
 
     app.listen(PORT, () => {
       console.log(`🎉 iVedio API 服务器已启动！`);
       console.log(`📱 服务地址: http://localhost:${PORT}`);
-      console.log(`� 健康检查: http://localhost:${PORT}/health`);
-      console.log(`🗃️  数据库类型: ${process.env.DB_TYPE || 'mysql'}`);
+      console.log(`✅ 健康检查: http://localhost:${PORT}/health`);
+      console.log(`🗃️  数据库类型: ${process.env.DB_TYPE || 'sqlite'}`);
     });
   } catch (error) {
     console.error('❌ 服务器启动失败:', error);

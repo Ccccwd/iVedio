@@ -39,10 +39,36 @@ const ProfilePage: React.FC = () => {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     loadUserData();
+    
+    // 监听收藏变化事件
+    const handleFavoriteChange = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      console.log('ProfilePage收到favoriteChanged事件:', customEvent.detail);
+      console.log('触发收藏数据刷新...');
+      // 修改refreshTrigger来触发下一个useEffect
+      setRefreshTrigger(prev => prev + 1);
+    };
+    
+    window.addEventListener('favoriteChanged', handleFavoriteChange);
+    console.log('ProfilePage: 已注册favoriteChanged事件监听器');
+    
+    return () => {
+      window.removeEventListener('favoriteChanged', handleFavoriteChange);
+      console.log('ProfilePage: 已移除favoriteChanged事件监听器');
+    };
   }, []);
+
+  // 当refreshTrigger改变时重新加载收藏数据
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      console.log('refreshTrigger改变，重新加载数据，触发次数:', refreshTrigger);
+      loadUserData();
+    }
+  }, [refreshTrigger]);
 
   const loadUserData = async () => {
     try {
@@ -77,7 +103,7 @@ const ProfilePage: React.FC = () => {
       console.log('正在加载收藏列表，用户ID:', userData.id);
       const favoritesResponse = await fetch(`http://localhost:3001/api/favorites/user/${userData.id}`);
       const favoritesResult = await favoritesResponse.json();
-      console.log('收藏列表响应:', favoritesResult);
+      console.log('收藏列表原始响应:', favoritesResult);
 
       if (favoritesResult.success) {
         // 转换数据格式以符合Video接口
@@ -96,9 +122,11 @@ const ProfilePage: React.FC = () => {
             category: fav.video.category || '未分类'
           }
         }));
+        console.log('转换后的收藏列表:', transformedFavorites);
         setFavorites(transformedFavorites);
       } else {
         console.warn('获取收藏列表失败:', favoritesResult.message);
+        setFavorites([]);
       }
 
     } catch (error) {

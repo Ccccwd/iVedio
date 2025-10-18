@@ -11,32 +11,40 @@ router.get('/user/:userId', async (req, res) => {
 
     const offset = (Number(page) - 1) * Number(limit);
 
+    // 先获取收藏记录
     const favorites = await Favorite.findAndCountAll({
       where: {
         userId: Number(userId)
       },
-      include: [
-        {
-          model: Video,
-          as: 'video',
-          attributes: [
-            'id', 'title', 'description', 'thumbnail', 'posterUrl',
-            'videoUrl', 'previewVideoUrl', 'duration', 'views',
-            'category', 'tags', 'uploadDate', 'releaseDate',
-            'director', 'actors', 'rating', 'quality', 'isVip'
-          ]
-        }
-      ],
       order: [['createdAt', 'DESC']],
       limit: Number(limit),
       offset,
       distinct: true
     });
 
+    // 获取关联的视频信息
+    const videoIds = favorites.rows.map(f => f.videoId);
+    const videos = await Video.findAll({
+      where: {
+        id: videoIds
+      }
+    });
+
+    const videoMap = new Map(videos.map(v => [v.id, v]));
+
+    // 组合数据
+    const combinedFavorites = favorites.rows.map(f => ({
+      id: f.id,
+      userId: f.userId,
+      videoId: f.videoId,
+      createdAt: f.createdAt,
+      video: videoMap.get(f.videoId)
+    }));
+
     res.json({
       success: true,
       data: {
-        favorites: favorites.rows,
+        favorites: combinedFavorites,
         total: favorites.count,
         page: Number(page),
         totalPages: Math.ceil(favorites.count / Number(limit))

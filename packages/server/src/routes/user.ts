@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { User, WatchHistory, Favorite, Video } from '../models';
+import { Favorite, User, Video, WatchHistory } from '../models';
 
 const router = Router();
 
@@ -7,7 +7,7 @@ const router = Router();
 router.get('/profile/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    
+
     const user = await User.findByPk(userId, {
       attributes: { exclude: ['password'] }
     });
@@ -37,7 +37,7 @@ router.get('/history/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const { page = 1, limit = 20 } = req.query;
-    
+
     const offset = (Number(page) - 1) * Number(limit);
 
     const { rows: history, count } = await WatchHistory.findAndCountAll({
@@ -78,7 +78,7 @@ router.get('/favorites/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const { page = 1, limit = 20 } = req.query;
-    
+
     const offset = (Number(page) - 1) * Number(limit);
 
     const { rows: favorites, count } = await Favorite.findAndCountAll({
@@ -185,9 +185,9 @@ router.get('/favorites/check/:userId/:videoId', async (req, res) => {
     const { userId, videoId } = req.params;
 
     const favorite = await Favorite.findOne({
-      where: { 
-        userId: Number(userId), 
-        videoId: Number(videoId) 
+      where: {
+        userId: Number(userId),
+        videoId: Number(videoId)
       }
     });
 

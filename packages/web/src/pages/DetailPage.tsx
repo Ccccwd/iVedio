@@ -1,5 +1,5 @@
 import type { Video } from '@shared/types'
-import { ArrowLeft, Calendar, Eye, MessageCircle, Share2, Tag, ThumbsUp } from 'lucide-react'
+import { ArrowLeft, MessageCircle, Share2, Tag, ThumbsUp } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import CommentSection from '../components/CommentSection'
@@ -132,22 +132,6 @@ function DetailPage() {
     return `${minutes}:${secs.toString().padStart(2, '0')}`
   }
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr)
-    return date.toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-  }
-
-  const formatViews = (views: number) => {
-    if (views >= 10000) {
-      return `${(views / 10000).toFixed(1)}万`
-    }
-    return views.toString()
-  }
-
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
@@ -241,14 +225,6 @@ function DetailPage() {
             {/* 元信息和操作按钮 */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex flex-wrap items-center gap-4 text-gray-400">
-                <div className="flex items-center space-x-2">
-                  <Eye className="w-4 h-4" />
-                  <span>{formatViews(video.views)} 次播放</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>{formatDate(video.uploadDate)}</span>
-                </div>
                 <div className="flex items-center space-x-2">
                   <Tag className="w-4 h-4" />
                   <span>{video.category}</span>
@@ -377,16 +353,8 @@ function DetailPage() {
               <h3 className="text-lg font-semibold text-white mb-3">视频数据</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">播放量：</span>
-                  <span className="text-white">{formatViews(video.views)}</span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-gray-400">时长：</span>
                   <span className="text-white">{formatDuration(video.duration)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">分辨率：</span>
-                  <span className="text-white">1080P</span>
                 </div>
               </div>
             </div>

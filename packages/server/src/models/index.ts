@@ -21,7 +21,7 @@ export function initializeModels() {
 
   Video.hasMany(WatchHistory, {
     foreignKey: 'videoId',
-    as: 'watchHistory'
+    as: 'videoWatchHistory'
   });
 
   WatchHistory.belongsTo(Video, {
@@ -42,7 +42,7 @@ export function initializeModels() {
 
   Video.hasMany(Favorite, {
     foreignKey: 'videoId',
-    as: 'favorites'
+    as: 'videoFavorites'
   });
 
   Favorite.belongsTo(Video, {
@@ -78,7 +78,7 @@ export function initializeModels() {
 
   Video.hasMany(Comment, {
     foreignKey: 'videoId',
-    as: 'comments'
+    as: 'videoComments'
   });
 
   Comment.belongsTo(Video, {
@@ -110,7 +110,7 @@ export function initializeModels() {
 
   Video.hasMany(Danmaku, {
     foreignKey: 'videoId',
-    as: 'danmakus'
+    as: 'videoDanmakus'
   });
 
   Danmaku.belongsTo(Video, {

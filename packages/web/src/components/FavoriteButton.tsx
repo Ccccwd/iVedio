@@ -5,9 +5,10 @@ interface FavoriteButtonProps {
   videoId: string
   userId?: number
   className?: string
+  onFavoriteChange?: (isFavorited: boolean) => void
 }
 
-function FavoriteButton({ videoId, userId, className = '' }: FavoriteButtonProps) {
+function FavoriteButton({ videoId, userId, className = '', onFavoriteChange }: FavoriteButtonProps) {
   const [isFavorited, setIsFavorited] = useState(false)
   const [loading, setLoading] = useState(false)
   const [currentUserId, setCurrentUserId] = useState<number | null>(null)
@@ -62,8 +63,24 @@ function FavoriteButton({ videoId, userId, className = '' }: FavoriteButtonProps
       })
 
       const result = await response.json()
+      console.log('收藏操作结果:', result)
+      
       if (result.success) {
-        setIsFavorited(result.data.isFavorited)
+        const newFavoritedState = result.data.isFavorited
+        console.log('更新收藏状态:', newFavoritedState)
+        setIsFavorited(newFavoritedState)
+        
+        // 通知父组件或外部回调函数
+        if (onFavoriteChange) {
+          onFavoriteChange(newFavoritedState)
+        }
+        
+        // 触发自定义事件，用于全局通知
+        const event = new CustomEvent('favoriteChanged', {
+          detail: { videoId: parseInt(videoId), isFavorited: newFavoritedState, timestamp: Date.now() }
+        })
+        console.log('发送favoriteChanged事件，数据:', { videoId: parseInt(videoId), isFavorited: newFavoritedState })
+        window.dispatchEvent(event)
       } else {
         console.error('收藏操作失败:', result.message)
       }
