@@ -1,4 +1,4 @@
-﻿import { Maximize, Pause, Play, Send, Settings, SkipBack, SkipForward, Volume2, VolumeX } from 'lucide-react'
+﻿import { Maximize, Pause, Play, Send, Settings, SkipBack, SkipForward, Volume2, VolumeX, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import './VideoPlayer.css'
 
@@ -807,7 +807,8 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
       )}
 
       {/* 控制栏 */}
-      {!useNativeControls && <div
+      {!useNativeControls && (
+        <div
         className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-all duration-300 ${showControls || !isPlaying ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
           }`}
         style={{ zIndex: 20 }}
@@ -869,30 +870,62 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
             {/* 弹幕控制 */}
             <button
               onClick={() => setShowDanmakuInput(true)}
-              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
+              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors flex items-center gap-1"
               title="发送弹幕"
             >
-              弹
+              <Send className="w-4 h-4" />
+              <span>发送</span>
             </button>
 
             <button
-              onClick={() => setDanmakuSettings(prev => ({ ...prev, enabled: !prev.enabled }))}
-              className={`px-3 py-1 rounded text-sm transition-colors ${danmakuSettings.enabled
-                ? 'bg-green-600 hover:bg-green-700 text-white'
-                : 'bg-gray-600 hover:bg-gray-500 text-gray-300'
+              onClick={() => {
+                const newEnabled = !danmakuSettings.enabled
+                console.log('🎯 弹幕开关按钮点击:', { 当前状态: danmakuSettings.enabled, 新状态: newEnabled })
+                setDanmakuSettings(prev => ({ ...prev, enabled: newEnabled }))
+                
+                // 如果开启弹幕，立即显示当前时间附近的弹幕
+                if (newEnabled && videoRef.current) {
+                  const currentTime = videoRef.current.currentTime
+                  console.log('🔍 查找当前时间附近的弹幕:', currentTime.toFixed(2) + 's')
+                  
+                  // 查找当前时间±1秒内的弹幕
+                  danmakus.forEach(danmaku => {
+                    const timeDiff = Math.abs(danmaku.time - currentTime)
+                    if (timeDiff < 1 && !displayedDanmakusRef.current.has(danmaku.id)) {
+                      console.log('🚀 立即显示弹幕:', danmaku.content, 'at', danmaku.time.toFixed(2) + 's')
+                      displayDanmaku(danmaku, true)
+                    }
+                  })
+                }
+              }}
+              className={`px-3 py-1 rounded text-sm transition-colors flex items-center gap-1 ${danmakuSettings.enabled
+                ? 'bg-red-600 hover:bg-red-700 text-white'
+                : 'bg-green-600 hover:bg-green-700 text-white'
                 }`}
               title={danmakuSettings.enabled ? '关闭弹幕' : '开启弹幕'}
             >
-              弹幕
+              {danmakuSettings.enabled ? (
+                <>
+                  <X className="w-4 h-4" />
+                  <span>关闭</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4" />
+                  <span>开启</span>
+                </>
+              )}
             </button>
 
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="text-white hover:text-blue-400 transition-colors"
-              title="弹幕设置"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
+            <div className="relative settings-panel-container">
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                className="text-white hover:text-blue-400 transition-colors"
+                title="弹幕设置"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+            </div>
 
             {/* 倍速按钮 */}
             <div className="relative speed-menu-container">
@@ -969,62 +1002,63 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
 
         {/* 弹幕设置面板 */}
         {showSettings && (
-          <div className="settings-panel-container absolute bottom-full right-0 mb-2 bg-black bg-opacity-90 text-white p-4 rounded-lg w-64 shadow-xl border border-gray-700">
-            <h3 className="text-sm font-semibold mb-3">弹幕设置</h3>
+          <div className="absolute bottom-20 right-4 bg-black bg-opacity-90 text-white p-4 rounded-lg w-64 shadow-xl border border-gray-700" style={{ zIndex: 1000 }}>
+          <h3 className="text-sm font-semibold mb-3">弹幕设置</h3>
 
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs text-gray-300 mb-1">不透明度</label>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="1"
-                  step="0.1"
-                  value={danmakuSettings.opacity}
-                  onChange={(e) => setDanmakuSettings(prev => ({ ...prev, opacity: parseFloat(e.target.value) }))}
-                  className="w-full"
-                />
-                <span className="text-xs text-gray-400">{Math.round(danmakuSettings.opacity * 100)}%</span>
-              </div>
-
-              <div>
-                <label className="block text-xs text-gray-300 mb-1">字体大小</label>
-                <input
-                  type="range"
-                  min="12"
-                  max="24"
-                  step="2"
-                  value={danmakuSettings.fontSize}
-                  onChange={(e) => setDanmakuSettings(prev => ({ ...prev, fontSize: parseInt(e.target.value) }))}
-                  className="w-full"
-                />
-                <span className="text-xs text-gray-400">{danmakuSettings.fontSize}px</span>
-              </div>
-
-              <div>
-                <label className="block text-xs text-gray-300 mb-1">滚动速度</label>
-                <input
-                  type="range"
-                  min="5"
-                  max="15"
-                  step="1"
-                  value={danmakuSettings.speed}
-                  onChange={(e) => setDanmakuSettings(prev => ({ ...prev, speed: parseInt(e.target.value) }))}
-                  className="w-full"
-                />
-                <span className="text-xs text-gray-400">{danmakuSettings.speed}秒</span>
-              </div>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs text-gray-300 mb-1">不透明度</label>
+              <input
+                type="range"
+                min="0.1"
+                max="1"
+                step="0.1"
+                value={danmakuSettings.opacity}
+                onChange={(e) => setDanmakuSettings(prev => ({ ...prev, opacity: parseFloat(e.target.value) }))}
+                className="w-full"
+              />
+              <span className="text-xs text-gray-400">{Math.round(danmakuSettings.opacity * 100)}%</span>
             </div>
 
-            <button
-              onClick={() => setShowSettings(false)}
-              className="mt-3 px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded text-xs transition-colors"
-            >
-              关闭
-            </button>
+            <div>
+              <label className="block text-xs text-gray-300 mb-1">字体大小</label>
+              <input
+                type="range"
+                min="12"
+                max="24"
+                step="2"
+                value={danmakuSettings.fontSize}
+                onChange={(e) => setDanmakuSettings(prev => ({ ...prev, fontSize: parseInt(e.target.value) }))}
+                className="w-full"
+              />
+              <span className="text-xs text-gray-400">{danmakuSettings.fontSize}px</span>
+            </div>
+
+            <div>
+              <label className="block text-xs text-gray-300 mb-1">滚动速度</label>
+              <input
+                type="range"
+                min="5"
+                max="15"
+                step="1"
+                value={danmakuSettings.speed}
+                onChange={(e) => setDanmakuSettings(prev => ({ ...prev, speed: parseInt(e.target.value) }))}
+                className="w-full"
+              />
+              <span className="text-xs text-gray-400">{danmakuSettings.speed}秒</span>
+            </div>
           </div>
+
+          <button
+            onClick={() => setShowSettings(false)}
+            className="mt-3 px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded text-xs transition-colors"
+          >
+            关闭
+          </button>
+        </div>
         )}
-      </div>}
+      </div>
+      )}
 
       {/* 加载状态 */}
       {isLoading && (

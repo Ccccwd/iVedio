@@ -71,3 +71,8 @@ video:focus {
     cursor: pointer;
     border: none;
 }
+
+/* 弹幕设置面板样式 */
+.settings-panel-container {
+    z-index: 1000;
+}

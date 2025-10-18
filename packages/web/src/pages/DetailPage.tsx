@@ -231,17 +231,7 @@ function DetailPage() {
                 </div>
               </div>
 
-              {/* 操作按钮 */}
-              <div className="flex items-center gap-3">
-                <button className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
-                  <ThumbsUp className="w-4 h-4" />
-                  <span>点赞</span>
-                </button>
-                <button className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
-                  <Share2 className="w-4 h-4" />
-                  <span>分享</span>
-                </button>
-              </div>
+
             </div>
 
             {/* 标签 */}

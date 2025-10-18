@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage'
 import KidsPage from './pages/KidsPage'
 import MoviesPage from './pages/MoviesPage'
 import ProfilePage from './pages/ProfilePage'
+import SearchPage from './pages/SearchPage'
 import SportsPage from './pages/SportsPage'
 import TvSeriesPage from './pages/TvSeriesPage'
 import VarietyPage from './pages/VarietyPage'
@@ -26,6 +27,7 @@ function App() {
           <Route path="/kids" element={<KidsPage />} />
           <Route path="/documentary" element={<DocumentaryPage />} />
           <Route path="/sports" element={<SportsPage />} />
+          <Route path="/search" element={<SearchPage />} />
         </Routes>
       </Layout>
     </BrowserRouter>

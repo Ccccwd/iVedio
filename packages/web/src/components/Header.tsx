@@ -1,6 +1,6 @@
 import { LogOut, Menu, Play, Search, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthModal from './AuthModal';
 
 interface UserData {
@@ -14,10 +14,12 @@ interface HeaderProps {
 }
 
 function Header({ onMenuClick }: HeaderProps) {
+  const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userData, setUserData] = useState<UserData | null>(null)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     // 检查本地存储中的登录状态
@@ -46,6 +48,13 @@ function Header({ onMenuClick }: HeaderProps) {
     window.location.href = '/'
   }
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
   return (
     <>
       <header className="sticky top-0 z-50 bg-background-card border-b border-gray-800">
@@ -69,11 +78,15 @@ function Header({ onMenuClick }: HeaderProps) {
             <div className="flex items-center space-x-4">
               <div className="hidden sm:flex items-center bg-background-hover rounded-full px-4 py-2">
                 <Search className="w-5 h-5 text-gray-400 mr-2" />
-                <input
-                  type="text"
-                  placeholder="搜索视频..."
-                  className="bg-transparent border-none outline-none text-white placeholder-gray-400 w-48"
-                />
+                <form onSubmit={handleSearch} className="flex items-center">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="搜索视频..."
+                    className="bg-transparent border-none outline-none text-white placeholder-gray-400 w-48"
+                  />
+                </form>
               </div>
 
               {/* User Menu */}
