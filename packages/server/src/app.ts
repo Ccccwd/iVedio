@@ -9,6 +9,7 @@ import { initializeModels } from './models';
 import authRoutes from './routes/auth';
 import commentRoutes from './routes/comment';
 import danmakuRoutes from './routes/danmaku';
+import episodeRoutes from './routes/episode';
 import favoriteRoutes from './routes/favorite';
 import userRoutes from './routes/user';
 import videoRoutes from './routes/video';
@@ -36,9 +37,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/danmakus', danmakuRoutes);
 app.use('/api/favorites', favoriteRoutes);
-app.use('/api/comments', commentRoutes);
-app.use('/api/danmakus', danmakuRoutes);
-app.use('/api/favorites', favoriteRoutes);
+app.use('/api/episodes', episodeRoutes);
 
 // 健康检查
 app.get('/health', async (req, res) => {

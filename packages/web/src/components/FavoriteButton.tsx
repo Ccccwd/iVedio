@@ -5,9 +5,10 @@ interface FavoriteButtonProps {
   videoId: string
   userId?: number
   className?: string
+  onFavoriteChange?: (isFavorited: boolean) => void
 }
 
-function FavoriteButton({ videoId, userId, className = '' }: FavoriteButtonProps) {
+function FavoriteButton({ videoId, userId, className = '', onFavoriteChange }: FavoriteButtonProps) {
   const [isFavorited, setIsFavorited] = useState(false)
   const [loading, setLoading] = useState(false)
   const [currentUserId, setCurrentUserId] = useState<number | null>(null)
@@ -44,6 +45,13 @@ function FavoriteButton({ videoId, userId, className = '' }: FavoriteButtonProps
     checkFavoriteStatus()
   }, [videoId, currentUserId])
 
+  // 当收藏状态变化时调用回调函数
+  useEffect(() => {
+    if (onFavoriteChange) {
+      onFavoriteChange(isFavorited)
+    }
+  }, [isFavorited, onFavoriteChange])
+
   // 切换收藏状态
   const handleToggleFavorite = async () => {
     if (loading || !currentUserId) return
@@ -64,6 +72,14 @@ function FavoriteButton({ videoId, userId, className = '' }: FavoriteButtonProps
       const result = await response.json()
       if (result.success) {
         setIsFavorited(result.data.isFavorited)
+        // 触发收藏状态变化事件
+        window.dispatchEvent(new CustomEvent('favoriteChanged', {
+          detail: {
+            videoId: videoId,
+            userId: currentUserId,
+            isFavorited: result.data.isFavorited
+          }
+        }))
       } else {
         console.error('收藏操作失败:', result.message)
       }
@@ -78,13 +94,13 @@ function FavoriteButton({ videoId, userId, className = '' }: FavoriteButtonProps
     <button
       onClick={handleToggleFavorite}
       disabled={loading}
-      className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-lg transition-colors disabled:opacity-50 ${isFavorited
+      className={`flex flex-col items-center justify-center space-y-1 px-4 py-3 rounded-lg transition-colors disabled:opacity-50 ${isFavorited
           ? 'bg-red-600 hover:bg-red-700 text-white'
           : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
         } ${className}`}
     >
       <Heart className={`w-5 h-5 ${isFavorited ? 'fill-current' : ''}`} />
-      <span>
+      <span className="text-sm">
         {loading ? '处理中...' : isFavorited ? '已收藏' : '收藏'}
       </span>
     </button>

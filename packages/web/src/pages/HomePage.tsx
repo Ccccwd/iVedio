@@ -1,5 +1,4 @@
 import type { Video } from '@shared/types'
-import { ChevronLeft, ChevronRight, Play } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import BannerHero from '../components/BannerHero'
 import VideoCard from '../components/VideoCard'
@@ -38,51 +37,35 @@ function HomePage() {
     }
   }
 
-  // 千与千寻的banner数据
-  const spiritedAwayBanner = {
-    id: 'spirited-away',
-    title: '千与千寻',
-    subtitle: 'Spirited Away',
-    description: '宫崎骏经典动画电影，讲述少女千寻误入神灵世界，为拯救父母勇敢成长的奇幻冒险。画面精美，情感细腻，适合全年龄观众。',
-    posterUrl: 'https://ivedio-image-1325747247.cos.ap-nanjing.myqcloud.com/qianyuqianxun.jpg',
-    previewVideoUrl: 'https://ivedio-vedio-1325747247.cos.ap-nanjing.myqcloud.com/qianyuqianxun-preview.mp4', // 使用预览视频
-    fullVideoUrl: 'https://ivedio-vedio-1325747247.cos.ap-nanjing.myqcloud.com/qianyuqianxun.mkv',
-    videoId: '7',
-    tags: ['动画', '奇幻', '宫崎骏', '成长', '经典'],
-    duration: '2小时4分',
-    rating: '9.4'
-  }
-
-  const CategorySection = ({ title, description }: { title: string, description: string }) => (
-    <section className="mb-12">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
-          <p className="text-gray-400">{description}</p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <button className="p-2 bg-background-card hover:bg-background-hover rounded-full transition">
-            <ChevronLeft size={20} className="text-gray-400" />
-          </button>
-          <button className="p-2 bg-background-card hover:bg-background-hover rounded-full transition">
-            <ChevronRight size={20} className="text-gray-400" />
-          </button>
-        </div>
-      </div>
-
-      {/* 内容预留区域 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {[...Array(6)].map((_, index) => (
-          <div key={index} className="bg-background-card rounded-lg p-6 text-center">
-            <div className="w-full h-32 bg-gradient-to-br from-gray-700 to-gray-800 rounded-lg mb-4 flex items-center justify-center">
-              <Play size={24} className="text-gray-500" />
-            </div>
-            <p className="text-gray-400 text-sm">内容即将上线</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
+  // Banner视频数据数组
+  const bannerVideos = [
+    {
+      id: 'spirited-away',
+      title: '千与千寻',
+      subtitle: 'Spirited Away',
+      description: '宫崎骏经典动画电影，讲述少女千寻误入神灵世界，为拯救父母勇敢成长的奇幻冒险。画面精美，情感细腻，适合全年龄观众。',
+      posterUrl: 'https://ivedio-image-1325747247.cos.ap-nanjing.myqcloud.com/qianyuqianxun.jpg',
+      previewVideoUrl: 'https://ivedio-vedio-1325747247.cos.ap-nanjing.myqcloud.com/qianyuqianxun-preview.mp4',
+      fullVideoUrl: 'https://ivedio-vedio-1325747247.cos.ap-nanjing.myqcloud.com/qianyuqianxun.mp4',
+      videoId: '7',
+      tags: ['动画', '奇幻', '宫崎骏', '成长', '经典'],
+      duration: '2小时4分',
+      rating: '9.4'
+    },
+    {
+      id: 'doctor-strange-2',
+      title: '奇异博士2',
+      subtitle: 'Doctor Strange in the Multiverse of Madness',
+      description: '漫威超级英雄电影，奇异博士探索多元宇宙的惊险之旅。充满视觉奇观和惊人的魔法场景，带你进入前所未见的奇幻世界。',
+      posterUrl: 'https://ivedio-image-1325747247.cos.ap-nanjing.myqcloud.com/DoctorStrange2.png',
+      previewVideoUrl: 'https://ivedio-vedio-1325747247.cos.ap-nanjing.myqcloud.com/DoctorStrange2-preview.mp4',
+      fullVideoUrl: 'https://ivedio-vedio-1325747247.cos.ap-nanjing.myqcloud.com/DoctorStrange2.mp4',
+      videoId: '8',
+      tags: ['漫威', '科幻', '动作', '奇幻', '超级英雄'],
+      duration: '2小时6分',
+      rating: '8.7'
+    }
+  ]
 
   if (loading) {
     return (
@@ -115,67 +98,110 @@ function HomePage() {
     )
   }
 
+  // 按分类筛选视频
+  const getVideosByCategory = (category: string) => {
+    return videos.filter(video => video.category === category)
+  }
+
+  const animeVideos = getVideosByCategory('动漫')
+  const movieVideos = getVideosByCategory('电影')
+  const tvSeriesVideos = getVideosByCategory('电视剧')
+  const varietyVideos = getVideosByCategory('综艺')
+  const documentaryVideos = getVideosByCategory('纪录片')
+
   return (
     <div className="space-y-8">
       {/* 使用新的BannerHero组件 */}
       <BannerHero
-        video={spiritedAwayBanner}
+        videos={bannerVideos}
         autoPlayDelay={4000} // 4秒后开始预览
       />
 
-      {/* 现有视频内容 */}
-      {videos.length > 0 && (
+      {/* 动漫分类 */}
+      {animeVideos.length > 0 && (
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">最新视频</h2>
-              <p className="text-gray-400">发现精彩内容</p>
+              <h2 className="text-2xl font-bold text-white mb-2">动漫</h2>
+              <p className="text-gray-400">精彩动漫作品</p>
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {videos.map((video) => (
+            {animeVideos.map((video) => (
               <VideoCard key={video.id} video={video} />
             ))}
           </div>
         </section>
       )}
 
-      {/* 分类预留区域 */}
-      <CategorySection
-        title="电视剧"
-        description="热播剧集，追剧必看"
-      />
-
-      <CategorySection
-        title="电影"
-        description="精选影片，院线大片"
-      />
-
-      <CategorySection
-        title="综艺"
-        description="热门综艺，娱乐无限"
-      />
-
-      <CategorySection
-        title="动漫"
-        description="动画世界，精彩纷呈"
-      />
-
-      <CategorySection
-        title="纪录片"
-        description="探索世界，增长见识"
-      />
-
-      {/* 调试信息 */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mt-8 p-4 bg-gray-800 rounded-lg">
-          <h3 className="text-white font-bold mb-2">调试信息</h3>
-          <p className="text-gray-300">视频数量: {videos.length}</p>
-          <p className="text-gray-300">加载状态: {loading ? '加载中' : '已完成'}</p>
-          {error && <p className="text-red-400">错误: {error}</p>}
-        </div>
+      {/* 电影分类 */}
+      {movieVideos.length > 0 && (
+        <section className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">电影</h2>
+              <p className="text-gray-400">精彩电影作品</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {movieVideos.map((video) => (
+              <VideoCard key={video.id} video={video} />
+            ))}
+          </div>
+        </section>
       )}
+
+      {/* 电视剧分类 */}
+      {tvSeriesVideos.length > 0 && (
+        <section className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">电视剧</h2>
+              <p className="text-gray-400">精彩电视剧作品</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {tvSeriesVideos.map((video) => (
+              <VideoCard key={video.id} video={video} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 综艺分类 */}
+      {varietyVideos.length > 0 && (
+        <section className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">综艺</h2>
+              <p className="text-gray-400">精彩综艺节目</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {varietyVideos.map((video) => (
+              <VideoCard key={video.id} video={video} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 纪录片分类 */}
+      {documentaryVideos.length > 0 && (
+        <section className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">纪录片</h2>
+              <p className="text-gray-400">精彩纪录片作品</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {documentaryVideos.map((video) => (
+              <VideoCard key={video.id} video={video} />
+            ))}
+          </div>
+        </section>
+      )}
+
     </div>
   )
 }

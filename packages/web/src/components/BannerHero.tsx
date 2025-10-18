@@ -17,11 +17,12 @@ interface BannerVideo {
 }
 
 interface BannerHeroProps {
-    video: BannerVideo
+    videos: BannerVideo[] // 改为支持多个视频
     autoPlayDelay?: number // 自动播放延迟（毫秒），默认4000ms
 }
 
-export default function BannerHero({ video, autoPlayDelay = 4000 }: BannerHeroProps) {
+export default function BannerHero({ videos, autoPlayDelay = 4000 }: BannerHeroProps) {
+    const [currentIndex, setCurrentIndex] = useState(0)
     const [isVideoPlaying, setIsVideoPlaying] = useState(false)
     const [isMuted, setIsMuted] = useState(true)
     const [hasError, setHasError] = useState(false)
@@ -30,6 +31,33 @@ export default function BannerHero({ video, autoPlayDelay = 4000 }: BannerHeroPr
 
     const videoRef = useRef<HTMLVideoElement>(null)
     const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+    const currentVideo = videos[currentIndex]
+
+    // 切换视频
+    const handleVideoSwitch = (index: number) => {
+        if (index === currentIndex) return
+        
+        // 停止当前视频
+        if (videoRef.current) {
+            videoRef.current.pause()
+            videoRef.current.currentTime = 0
+        }
+        
+        // 重置状态
+        setIsVideoPlaying(false)
+        setHasError(false)
+        setIsVideoLoaded(false)
+        setShowPlayButton(true)
+        
+        // 切换到新视频
+        setCurrentIndex(index)
+        
+        // 清除旧的定时器
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current)
+        }
+    }
 
     useEffect(() => {
         // 预加载视频资源
@@ -47,7 +75,7 @@ export default function BannerHero({ video, autoPlayDelay = 4000 }: BannerHeroPr
                 clearTimeout(timeoutRef.current)
             }
         }
-    }, [autoPlayDelay])
+    }, [autoPlayDelay, currentIndex]) // 添加currentIndex依赖
 
     const handleStartPreview = async () => {
         if (!videoRef.current || hasError) return
@@ -101,7 +129,7 @@ export default function BannerHero({ video, autoPlayDelay = 4000 }: BannerHeroPr
                 className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${isVideoPlaying && !hasError ? 'opacity-0' : 'opacity-100'
                     }`}
                 style={{
-                    backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url(${video.posterUrl})`
+                    backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url(${currentVideo.posterUrl})`
                 }}
             />
 
@@ -116,23 +144,23 @@ export default function BannerHero({ video, autoPlayDelay = 4000 }: BannerHeroPr
                 loop
                 onLoadedData={handleVideoLoaded}
                 onError={handleVideoError}
-                onLoadStart={() => console.log('开始加载预览视频:', video.previewVideoUrl)}
+                onLoadStart={() => console.log('开始加载预览视频:', currentVideo.previewVideoUrl)}
                 onCanPlay={() => console.log('预览视频可以播放')}
             >
                 {/* 根据文件扩展名设置正确的MIME类型 */}
-                {video.previewVideoUrl.includes('.mp4') && (
-                    <source src={video.previewVideoUrl} type="video/mp4" />
+                {currentVideo.previewVideoUrl.includes('.mp4') && (
+                    <source src={currentVideo.previewVideoUrl} type="video/mp4" />
                 )}
-                {video.previewVideoUrl.includes('.mkv') && (
-                    <source src={video.previewVideoUrl} type="video/x-matroska" />
+                {currentVideo.previewVideoUrl.includes('.mkv') && (
+                    <source src={currentVideo.previewVideoUrl} type="video/x-matroska" />
                 )}
-                {video.previewVideoUrl.includes('.webm') && (
-                    <source src={video.previewVideoUrl} type="video/webm" />
+                {currentVideo.previewVideoUrl.includes('.webm') && (
+                    <source src={currentVideo.previewVideoUrl} type="video/webm" />
                 )}
 
                 {/* 通用fallback */}
-                <source src={video.previewVideoUrl} type="video/mp4" />
-                <source src={video.previewVideoUrl} type="video/webm" />
+                <source src={currentVideo.previewVideoUrl} type="video/mp4" />
+                <source src={currentVideo.previewVideoUrl} type="video/webm" />
             </video>
 
             {/* 渐变遮罩 */}
@@ -144,12 +172,12 @@ export default function BannerHero({ video, autoPlayDelay = 4000 }: BannerHeroPr
                     <div className="max-w-2xl">
                         {/* 标题 */}
                         <h1 className="text-5xl md:text-7xl font-bold text-white mb-2 drop-shadow-2xl">
-                            {video.title}
+                            {currentVideo.title}
                         </h1>
 
-                        {video.subtitle && (
+                        {currentVideo.subtitle && (
                             <p className="text-xl text-gray-300 mb-4 font-light">
-                                {video.subtitle}
+                                {currentVideo.subtitle}
                             </p>
                         )}
 
@@ -157,11 +185,11 @@ export default function BannerHero({ video, autoPlayDelay = 4000 }: BannerHeroPr
                         <div className="flex items-center space-x-4 mb-6">
                             <div className="flex items-center space-x-2">
                                 <span className="text-yellow-400 text-lg">★</span>
-                                <span className="text-white font-bold">{video.rating}</span>
+                                <span className="text-white font-bold">{currentVideo.rating}</span>
                             </div>
-                            <span className="text-gray-300">{video.duration}</span>
+                            <span className="text-gray-300">{currentVideo.duration}</span>
                             <div className="flex space-x-2">
-                                {video.tags.slice(0, 3).map((tag, index) => (
+                                {currentVideo.tags.slice(0, 3).map((tag, index) => (
                                     <span key={index} className="px-2 py-1 bg-white/20 text-white text-xs rounded">
                                         {tag}
                                     </span>
@@ -171,13 +199,13 @@ export default function BannerHero({ video, autoPlayDelay = 4000 }: BannerHeroPr
 
                         {/* 描述 */}
                         <p className="text-gray-200 text-lg mb-8 leading-relaxed line-clamp-3">
-                            {video.description}
+                            {currentVideo.description}
                         </p>
 
                         {/* 操作按钮 */}
                         <div className="flex items-center space-x-4">
                             <Link
-                                to={`/video/${video.videoId}`}
+                                to={`/video/${currentVideo.videoId}`}
                                 className="flex items-center space-x-3 bg-white text-black px-8 py-4 rounded-lg font-bold hover:bg-gray-200 transition-all duration-200 transform hover:scale-105"
                             >
                                 <Play size={24} fill="currentColor" />
@@ -209,13 +237,40 @@ export default function BannerHero({ video, autoPlayDelay = 4000 }: BannerHeroPr
                 </div>
             </div>
 
-            {/* 状态指示器 */}
-            <div className="absolute bottom-6 right-6 flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full transition-all duration-300 ${!isVideoPlaying ? 'bg-white' : 'bg-white/40'
-                    }`}></div>
-                <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isVideoPlaying && !hasError ? 'bg-white' : 'bg-white/40'
-                    }`}></div>
-                <div className="w-2 h-2 bg-white/40 rounded-full"></div>
+            {/* 右下角封面切换器 */}
+            <div className="absolute bottom-6 right-6 flex items-center space-x-3 z-20">
+                {videos.map((video, index) => (
+                    <button
+                        key={video.id}
+                        onClick={() => handleVideoSwitch(index)}
+                        className={`relative group transition-all duration-300 rounded-lg overflow-hidden ${
+                            currentIndex === index 
+                                ? 'scale-110 ring-4 ring-white shadow-2xl' 
+                                : 'scale-100 opacity-60 hover:opacity-100 hover:scale-105'
+                        }`}
+                    >
+                        <img
+                            src={video.posterUrl}
+                            alt={video.title}
+                            className="w-24 h-36 object-cover"
+                        />
+                        {/* 遮罩层 */}
+                        <div className={`absolute inset-0 bg-black transition-opacity ${
+                            currentIndex === index ? 'opacity-0' : 'opacity-30 group-hover:opacity-0'
+                        }`}></div>
+                        
+                        {/* 悬浮提示 */}
+                        <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/90 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
+                            {video.title}
+                            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/90"></div>
+                        </div>
+                        
+                        {/* 当前选中指示器 */}
+                        {currentIndex === index && (
+                            <div className="absolute inset-0 border-4 border-white rounded-lg pointer-events-none"></div>
+                        )}
+                    </button>
+                ))}
             </div>
 
             {/* 错误提示 */}

@@ -1,5 +1,6 @@
 import Comment from './Comment';
 import Danmaku from './Danmaku';
+import Episode from './Episode';
 import Favorite from './Favorite';
 import User from './User';
 import Video from './Video';
@@ -116,6 +117,17 @@ export function initializeModels() {
     foreignKey: 'videoId',
     as: 'video'
   });
+
+  // 视频剧集
+  Video.hasMany(Episode, {
+    foreignKey: 'videoId',
+    as: 'episodes'
+  });
+
+  Episode.belongsTo(Video, {
+    foreignKey: 'videoId',
+    as: 'video'
+  });
 }
 
-export { Comment, Danmaku, Favorite, User, Video, WatchHistory };
+export { Comment, Danmaku, Episode, Favorite, User, Video, WatchHistory };

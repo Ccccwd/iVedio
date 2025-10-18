@@ -27,7 +27,36 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
   const danmakuContainerRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [danmakus, setDanmakus] = useState<Danmaku[]>([])
+  // 硬编码测试弹幕数据
+  const [danmakus, setDanmakus] = useState<Danmaku[]>([
+    {
+      id: 1001,
+      content: '111',
+      time: 58.0, // 58秒
+      color: '#FFFFFF',
+      type: 'scroll',
+      fontSize: 20,
+      user: { username: '测试用户1' }
+    },
+    {
+      id: 1002,
+      content: '123',
+      time: 60.0, // 60秒(1分钟)
+      color: '#FFFFFF',
+      type: 'scroll',
+      fontSize: 20,
+      user: { username: '测试用户2' }
+    },
+    {
+      id: 1003,
+      content: '111',
+      time: 62.0, // 62秒
+      color: '#FFFFFF',
+      type: 'scroll',
+      fontSize: 20,
+      user: { username: '测试用户3' }
+    }
+  ])
   const [newDanmaku, setNewDanmaku] = useState('')
   const [danmakuSettings, setDanmakuSettings] = useState({
     enabled: true,
@@ -37,20 +66,26 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
   })
   const [showDanmakuInput, setShowDanmakuInput] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false)
   const [showControls, setShowControls] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [volume, setVolume] = useState(1)
+  const [playbackRate, setPlaybackRate] = useState(1.0)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const saveProgressTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const activeDanmakusRef = useRef<Set<number>>(new Set())
+  const displayedDanmakusRef = useRef<Set<number>>(new Set()) // 记录已显示的弹幕
+  const lastTimeRef = useRef(0) // 记录上一次的播放时间
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isSeekingRef = useRef(false)
   const progressLoadedRef = useRef(false)
   const retryCountRef = useRef(0)
   const maxRetries = 3
+  const lastVideoIdRef = useRef<string | undefined>(undefined) // 记录上次的视频ID
+  const danmakuCacheRef = useRef<Map<string, Danmaku[]>>(new Map()) // 新增：弹幕缓存
 
   // 保存观看进度
   const saveProgress = async (currentTime: number, duration: number) => {
@@ -96,7 +131,11 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
           // 只有在视频准备好时才设置currentTime
           if (video.readyState >= 1) { // HAVE_METADATA
             setTimeout(() => {
-              video.currentTime = result.data.progress
+              const targetTime = result.data.progress
+              video.currentTime = targetTime
+              // 重要：更新lastTimeRef为跳转目标时间，避免显示之前的所有弹幕
+              lastTimeRef.current = targetTime
+              console.log('已更新lastTimeRef为:', targetTime)
             }, 100) // 延迟100ms确保视频完全ready
           }
         }
@@ -106,20 +145,59 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
     }
   }
 
-  // 获取弹幕数据
+  // 获取弹幕数据 - 暂时禁用,使用硬编码数据测试
   const loadDanmakus = async () => {
-    if (!videoId) return
+    console.log('⚠️ 使用硬编码弹幕数据进行测试')
+    console.log('硬编码弹幕数量:', danmakus.length)
+    console.log('硬编码弹幕列表:', danmakus.map(d => `${d.time}s: ${d.content}`))
+    return // 直接返回,不从API加载
+  }
+
+  // 原API加载代码（已禁用）
+  /*
+  const loadDanmakus = async () => {
+    if (!videoId) {
+      console.log('没有videoId，跳过加载弹幕')
+      return
+    }
+
+    console.log('开始加载弹幕，videoId:', videoId)
+
+    // 检查缓存
+    const cacheKey = `video_${videoId}`
+    const cachedDanmakus = danmakuCacheRef.current.get(cacheKey)
+    if (cachedDanmakus) {
+      console.log('从缓存加载弹幕数据，数量:', cachedDanmakus.length)
+      setDanmakus(cachedDanmakus)
+      return
+    }
 
     try {
-      const response = await fetch(`http://localhost:3001/api/danmakus/video/${videoId}`)
+      const url = `http://localhost:3001/api/danmakus/video/${videoId}`
+      console.log('请求弹幕API:', url)
+      
+      const response = await fetch(url)
       const result = await response.json()
+      
+      console.log('弹幕API响应:', result)
+      
       if (result.success) {
+        // 缓存弹幕数据
+        danmakuCacheRef.current.set(cacheKey, result.data)
         setDanmakus(result.data)
+        console.log(`✅ 成功加载 ${result.data.length} 条弹幕`)
+        
+        // 打印所有弹幕的时间点
+        if (result.data.length > 0) {
+          console.log('弹幕时间点:', result.data.map((d: any) => `${d.time.toFixed(2)}s: ${d.content}`))
+        }
+      } else {
+        console.error('加载弹幕失败:', result.message)
       }
     } catch (error) {
-      console.error('加载弹幕失败:', error)
+      console.error('加载弹幕异常:', error)
     }
-  }
+  */
 
   // 发送弹幕
   const sendDanmaku = async () => {
@@ -129,6 +207,12 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
     const currentTime = video.currentTime
     const userData = localStorage.getItem('userData')
     const user = userData ? JSON.parse(userData) : { id: 1 }
+
+    console.log('发送弹幕:', {
+      content: newDanmaku.trim(),
+      time: currentTime,
+      fontSize: danmakuSettings.fontSize
+    })
 
     try {
       const response = await fetch('http://localhost:3001/api/danmakus', {
@@ -148,32 +232,81 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
       })
 
       const result = await response.json()
+      console.log('弹幕发送响应:', result)
+      
       if (result.success) {
         // 立即显示新发送的弹幕
         const newDanmakuItem = result.data
-        setDanmakus(prev => [...prev, newDanmakuItem])
+        console.log('新弹幕数据:', newDanmakuItem)
+        
+        setDanmakus(prev => {
+          const updatedDanmakus = [...prev, newDanmakuItem]
+          console.log('更新弹幕列表，总数:', updatedDanmakus.length)
+          // 更新缓存
+          const cacheKey = `video_${videoId}`
+          danmakuCacheRef.current.set(cacheKey, updatedDanmakus)
+          return updatedDanmakus
+        })
+        
+        // 立即显示新发送的弹幕
+        console.log('立即显示新弹幕:', newDanmakuItem.content)
         displayDanmaku(newDanmakuItem, true)
         setNewDanmaku('')
         setShowDanmakuInput(false)
+      } else {
+        console.error('发送弹幕失败:', result.message)
       }
     } catch (error) {
-      console.error('发送弹幕失败:', error)
+      console.error('发送弹幕异常:', error)
     }
   }
 
   // 显示弹幕
   const displayDanmaku = (danmaku: Danmaku, immediate = false) => {
-    if (!danmakuSettings.enabled || !danmakuContainerRef.current) return
-    if (activeDanmakusRef.current.has(danmaku.id)) return
+    console.log('🎯 displayDanmaku 被调用:', { 
+      content: danmaku.content, 
+      time: danmaku.time,
+      immediate, 
+      enabled: danmakuSettings.enabled,
+      isActive: activeDanmakusRef.current.has(danmaku.id),
+      isDisplayed: displayedDanmakusRef.current.has(danmaku.id),
+      containerExists: !!danmakuContainerRef.current
+    })
+    
+    if (!danmakuSettings.enabled) {
+      console.log('❌ 弹幕未启用')
+      return
+    }
+    
+    if (!danmakuContainerRef.current) {
+      console.log('❌ 弹幕容器不存在')
+      return
+    }
+    
+    if (activeDanmakusRef.current.has(danmaku.id)) {
+      console.log('⏸️ 弹幕正在显示中，跳过')
+      return
+    }
+
+    // 只有非立即显示时才检查是否已显示过
+    if (!immediate && displayedDanmakusRef.current.has(danmaku.id)) {
+      console.log('⏭️ 弹幕已显示过，跳过')
+      return
+    }
 
     const container = danmakuContainerRef.current
     const video = videoRef.current
-    if (!video) return
+    if (!video) {
+      console.log('❌ 视频元素不存在')
+      return
+    }
 
-    // 如果不是立即显示，检查时间是否匹配
-    if (!immediate && Math.abs(video.currentTime - danmaku.time) > 0.5) return
-
+    console.log('✨ 开始显示弹幕:', danmaku.content, 'at', danmaku.time.toFixed(2) + 's')
+    
     activeDanmakusRef.current.add(danmaku.id)
+    if (!immediate) {
+      displayedDanmakusRef.current.add(danmaku.id) // 只有非立即显示时才标记为已显示
+    }
 
     const danmakuElement = document.createElement('div')
     danmakuElement.className = 'absolute whitespace-nowrap pointer-events-none select-none'
@@ -216,16 +349,49 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
 
   // 处理视频时间更新，显示对应时间的弹幕
   const handleTimeUpdate = () => {
-    if (!videoRef.current || !danmakuSettings.enabled) return
+    if (!videoRef.current) return
 
     const currentTime = videoRef.current.currentTime
+    const lastTime = lastTimeRef.current
 
-    // 查找当前时间应该显示的弹幕
+    // 详细日志
+    if (Math.floor(currentTime) !== Math.floor(lastTime)) {
+      console.log(`⏰ 时间更新: ${lastTime.toFixed(2)}s → ${currentTime.toFixed(2)}s | 弹幕开启: ${danmakuSettings.enabled} | 弹幕总数: ${danmakus.length}`)
+    }
+
+    if (!danmakuSettings.enabled) {
+      lastTimeRef.current = currentTime
+      return
+    }
+
+    // 检测是否是向后跳转（回退）
+    const isBackward = currentTime < lastTime
+
+    // 查找应该显示的弹幕
     danmakus.forEach(danmaku => {
-      if (Math.abs(currentTime - danmaku.time) < 0.5) {
-        displayDanmaku(danmaku)
+      // 向前播放：显示lastTime到currentTime之间的弹幕
+      // 向后跳转：由于已清空displayedDanmakusRef，所以会重新显示
+      if (isBackward) {
+        // 向后跳转时，显示当前时间附近的弹幕（±0.5秒窗口）
+        const timeDiff = Math.abs(danmaku.time - currentTime)
+        if (timeDiff < 0.5 && !displayedDanmakusRef.current.has(danmaku.id)) {
+          console.log(`[回退] 显示弹幕: "${danmaku.content}" at ${danmaku.time.toFixed(2)}s (timeDiff: ${timeDiff.toFixed(2)}s)`)
+          displayDanmaku(danmaku)
+        }
+      } else {
+        // 正常播放：显示时间段内的弹幕
+        if (danmaku.time >= lastTime && danmaku.time <= currentTime && !displayedDanmakusRef.current.has(danmaku.id)) {
+          console.log(`✅ 显示弹幕: "${danmaku.content}" at ${danmaku.time.toFixed(2)}s (范围: ${lastTime.toFixed(2)}s - ${currentTime.toFixed(2)}s)`)
+          displayDanmaku(danmaku)
+        } else if (danmaku.time >= lastTime && danmaku.time <= currentTime) {
+          // 调试：弹幕在范围内但已显示过
+          console.log(`⏭️ 跳过已显示弹幕: "${danmaku.content}" at ${danmaku.time.toFixed(2)}s`)
+        }
       }
     })
+
+    // 更新上次时间
+    lastTimeRef.current = currentTime
 
     // 保存观看进度（防抖）
     if (saveProgressTimeoutRef.current) {
@@ -320,6 +486,17 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
     }
   }
 
+  // 切换播放倍速
+  const handlePlaybackRateChange = (rate: number) => {
+    const video = videoRef.current
+    if (!video) return
+    
+    video.playbackRate = rate
+    setPlaybackRate(rate)
+    setShowSpeedMenu(false)
+    console.log('播放速度设置为:', rate + 'x')
+  }
+
   // 控制栏自动隐藏
   const showControlsTemporarily = () => {
     setShowControls(true)
@@ -347,6 +524,22 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
     // 重置进度加载标志
     progressLoadedRef.current = false
     isSeekingRef.current = false
+    lastTimeRef.current = 0
+    displayedDanmakusRef.current.clear()
+
+    // 新增：如果视频ID发生变化，重置弹幕状态
+    if (lastVideoIdRef.current !== videoId) {
+      console.log('视频ID发生变化，重置弹幕状态')
+      lastVideoIdRef.current = videoId
+      setDanmakus([]) // 清空弹幕列表
+      displayedDanmakusRef.current.clear() // 清空已显示弹幕记录
+      activeDanmakusRef.current.clear() // 清空活跃弹幕记录
+      
+      // 重新加载弹幕
+      if (videoId) {
+        loadDanmakus()
+      }
+    }
 
     const handleLoadStart = () => {
       console.log('Video loading started:', src)
@@ -445,11 +638,17 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
     const handleSeeking = () => {
       console.log('视频开始跳转...')
       isSeekingRef.current = true
+      // 清空已显示弹幕记录，允许跳转后重新显示
+      displayedDanmakusRef.current.clear()
     }
 
     const handleSeeked = () => {
       console.log('视频跳转完成')
       isSeekingRef.current = false
+      // 更新lastTime为当前时间，避免显示跳转前的弹幕
+      if (video) {
+        lastTimeRef.current = video.currentTime
+      }
     }
 
     // 添加事件监听器
@@ -463,17 +662,46 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
     video.addEventListener('seeking', handleSeeking)
     video.addEventListener('seeked', handleSeeked)
 
-    // 加载弹幕数据
-    loadDanmakus()
+    // 如果视频ID没有变化，且弹幕列表为空，则加载弹幕数据
+    if (videoId && lastVideoIdRef.current === videoId && danmakus.length === 0) {
+      loadDanmakus()
+    }
 
-    // 清理函数
+    // 点击外部关闭菜单
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (!target.closest('.speed-menu-container')) {
+        setShowSpeedMenu(false)
+      }
+      if (!target.closest('.settings-panel-container')) {
+        setShowSettings(false)
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside)
+
+    // 清理函数 - 优化内存管理
     return () => {
+      document.removeEventListener('click', handleClickOutside)
+      
       if (saveProgressTimeoutRef.current) {
         clearTimeout(saveProgressTimeoutRef.current)
       }
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current)
       }
+      
+      // 清理所有活跃的弹幕元素
+      if (danmakuContainerRef.current) {
+        const container = danmakuContainerRef.current
+        while (container.firstChild) {
+          container.removeChild(container.firstChild)
+        }
+      }
+      
+      // 清空活跃弹幕记录
+      activeDanmakusRef.current.clear()
+      
       video.removeEventListener('loadstart', handleLoadStart)
       video.removeEventListener('canplay', handleCanPlay)
       video.removeEventListener('timeupdate', handleTimeUpdateInternal)
@@ -666,6 +894,34 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
               <Settings className="w-5 h-5" />
             </button>
 
+            {/* 倍速按钮 */}
+            <div className="relative speed-menu-container">
+              <button
+                onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+                className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors"
+                title="播放速度"
+              >
+                {playbackRate}x
+              </button>
+
+              {/* 倍速菜单 */}
+              {showSpeedMenu && (
+                <div className="absolute bottom-full right-0 mb-2 bg-black bg-opacity-95 text-white rounded-lg py-2 min-w-[80px] shadow-xl border border-gray-700">
+                  {[0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map(rate => (
+                    <button
+                      key={rate}
+                      onClick={() => handlePlaybackRateChange(rate)}
+                      className={`w-full px-4 py-2 text-left hover:bg-gray-700 transition-colors ${
+                        playbackRate === rate ? 'text-blue-400 bg-gray-800' : ''
+                      }`}
+                    >
+                      {rate}x
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button onClick={toggleFullscreen} className="text-white hover:text-blue-400 transition-colors">
               <Maximize className="w-5 h-5" />
             </button>
@@ -713,7 +969,7 @@ function VideoPlayer({ src, poster, videoId, onReady, useNativeControls = false 
 
         {/* 弹幕设置面板 */}
         {showSettings && (
-          <div className="absolute bottom-full right-0 mb-2 bg-black bg-opacity-90 text-white p-4 rounded-lg w-64">
+          <div className="settings-panel-container absolute bottom-full right-0 mb-2 bg-black bg-opacity-90 text-white p-4 rounded-lg w-64 shadow-xl border border-gray-700">
             <h3 className="text-sm font-semibold mb-3">弹幕设置</h3>
 
             <div className="space-y-3">

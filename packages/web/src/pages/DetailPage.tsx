@@ -1,5 +1,5 @@
 import type { Video } from '@shared/types'
-import { ArrowLeft, Calendar, Eye, MessageCircle, Share2, Tag, ThumbsUp } from 'lucide-react'
+import { ArrowLeft, Calendar, Eye, Heart, MessageCircle, Play, Share2, Tag, ThumbsUp } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import CommentSection from '../components/CommentSection'
@@ -8,11 +8,25 @@ import VideoCard from '../components/VideoCard'
 import VideoPlayer from '../components/VideoPlayer'
 import { getCurrentUser, mockLogin } from '../utils/auth'
 
+interface Episode {
+  id: number
+  videoId: number
+  episodeNumber: number
+  title: string
+  description?: string
+  videoUrl: string
+  thumbnail?: string
+  duration: number
+  isVip: boolean
+}
+
 function DetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [video, setVideo] = useState<Video | null>(null)
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([])
+  const [episodes, setEpisodes] = useState<Episode[]>([])
+  const [currentEpisode, setCurrentEpisode] = useState<Episode | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isMinimized, setIsMinimized] = useState(false)
@@ -65,6 +79,16 @@ function DetailPage() {
 
         if (videoResult.success) {
           setVideo(videoResult.data)
+
+          // 获取剧集列表
+          const episodesResponse = await fetch(`http://localhost:3001/api/episodes/video/${id}`)
+          if (episodesResponse.ok) {
+            const episodesResult = await episodesResponse.json()
+            if (episodesResult.success && episodesResult.data.length > 0) {
+              setEpisodes(episodesResult.data)
+              setCurrentEpisode(episodesResult.data[0]) // 默认选择第一集
+            }
+          }
 
           // 获取相关视频（所有视频，然后排除当前视频）
           const relatedResponse = await fetch(`http://localhost:3001/api/videos`)
@@ -192,7 +216,7 @@ function DetailPage() {
           {/* 视频播放器 */}
           <div className={`transition-all duration-300 ${isMinimized ? 'fixed top-4 right-4 w-80 h-48 z-50 shadow-2xl rounded-lg overflow-hidden' : 'w-full'}`}>
             <VideoPlayer
-              src={video.videoUrl}
+              src={currentEpisode ? currentEpisode.videoUrl : video.videoUrl}
               poster={video.thumbnail}
               videoId={video.id}
               useNativeControls={false}
@@ -271,25 +295,84 @@ function DetailPage() {
         {/* 右侧：操作面板 */}
         <div className="lg:col-span-1">
           <div className="sticky top-4 space-y-4">
-            {/* 收藏按钮 */}
-            <div className="bg-background-card p-4 rounded-lg">
-              <FavoriteButton
-                videoId={video.id}
-                userId={currentUser?.id}
-                className="w-full"
+            {/* 视频封面 */}
+            <div className="bg-background-card rounded-lg overflow-hidden shadow-lg">
+              <img
+                src={video.thumbnail}
+                alt={video.title}
+                className="w-full h-auto object-cover"
               />
             </div>
 
-            {/* 评论导航 */}
-            <div className="bg-background-card p-4 rounded-lg">
+            {/* 收藏和评论按钮（一行） */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* 收藏按钮 */}
+              <FavoriteButton
+                videoId={video.id}
+                userId={currentUser?.id}
+                className="w-full h-full"
+              />
+
+              {/* 评论导航按钮 */}
               <button
                 onClick={handleScrollToComments}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                className="bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors flex flex-col items-center justify-center space-y-1 px-4 py-3"
               >
                 <MessageCircle className="w-5 h-5" />
-                <span>查看评论</span>
+                <span className="text-sm">查看评论</span>
               </button>
             </div>
+
+            {/* 剧集列表 */}
+            {episodes.length > 0 && (
+              <div className="bg-background-card rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-white">剧集</h3>
+                  <span className="text-sm text-gray-400">共{episodes.length}集</span>
+                </div>
+                <div className="grid grid-cols-5 gap-2 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                  {episodes.map((episode) => (
+                    <button
+                      key={episode.id}
+                      onClick={() => setCurrentEpisode(episode)}
+                      className={`relative group transition-all duration-200 ${
+                        currentEpisode?.id === episode.id
+                          ? 'transform scale-105'
+                          : 'hover:scale-105'
+                      }`}
+                      title={episode.title}
+                    >
+                      {/* 按钮背景 */}
+                      <div className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${
+                        currentEpisode?.id === episode.id
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}>
+                        {episode.episodeNumber}
+                      </div>
+                      
+                      {/* VIP标记 */}
+                      {episode.isVip && (
+                        <div className="absolute -top-1 -right-1 bg-yellow-600 text-white text-xs px-1.5 py-0.5 rounded-full font-bold shadow-lg">
+                          VIP
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                {/* 当前播放信息 */}
+                {currentEpisode && (
+                  <div className="mt-3 pt-3 border-t border-gray-700">
+                    <p className="text-sm text-gray-400">
+                      正在播放: <span className="text-white font-medium">{currentEpisode.title}</span>
+                    </p>
+                    {currentEpisode.description && (
+                      <p className="text-xs text-gray-500 mt-1">{currentEpisode.description}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* 视频统计 */}
             <div className="bg-background-card p-4 rounded-lg">

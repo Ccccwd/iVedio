@@ -1,5 +1,5 @@
 import type { Video } from '@shared/types'
-import { Eye, Play } from 'lucide-react'
+import { Play } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -16,19 +16,6 @@ function VideoCard({ video }: VideoCardProps) {
     const minutes = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${minutes}:${secs.toString().padStart(2, '0')}`
-  }
-
-  const formatViews = (views: number | undefined) => {
-    if (!views || views === 0) {
-      return '0'
-    }
-    if (views >= 1000000) {
-      return `${(views / 1000000).toFixed(1)}M`
-    }
-    if (views >= 1000) {
-      return `${(views / 1000).toFixed(1)}K`
-    }
-    return views.toString()
   }
 
   const handleImageLoad = () => {
@@ -92,12 +79,13 @@ function VideoCard({ video }: VideoCardProps) {
         <h3 className="text-white font-medium line-clamp-2 mb-2 group-hover:text-primary transition">
           {video.title}
         </h3>
-        <div className="flex items-center text-gray-400 text-sm space-x-4">
-          <div className="flex items-center space-x-1">
-            <Eye className="w-4 h-4" />
-            <span>{formatViews(video.views)}</span>
-          </div>
-          <span>{video.category}</span>
+        {/* 描述 */}
+        <p className="text-gray-400 text-sm line-clamp-2 mb-2">
+          {video.description}
+        </p>
+        {/* 分类标签 */}
+        <div className="flex items-center text-gray-500 text-xs">
+          <span className="bg-gray-800 px-2 py-1 rounded">{video.category}</span>
         </div>
       </div>
     </div>
