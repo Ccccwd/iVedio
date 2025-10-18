@@ -1,6 +1,7 @@
 import type { Video } from '@shared/types'
-import { ChevronLeft, ChevronRight, Play } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Play, VolumeX, Volume2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import VideoCard from '../components/VideoCard'
 import BannerHero from '../components/BannerHero'
 
@@ -8,6 +9,9 @@ function HomePage() {
   const [videos, setVideos] = useState<Video[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showVideo, setShowVideo] = useState(false)
+  const [isMuted, setIsMuted] = useState(true)
+  const [isPlaying, setIsPlaying] = useState(false)
 
   useEffect(() => {
     fetchVideos()

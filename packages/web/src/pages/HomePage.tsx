@@ -25,6 +25,7 @@ function HomePage() {
       console.log('API响应:', result)
 
       if (result.success) {
+        // 修正数据访问路径
         setVideos(result.data.videos || [])
       } else {
         setError(result.message || '获取视频失败')

@@ -15,4 +15,6 @@ export default defineConfig({
     port: 5173,
     open: true,
   },
+  // 为Electron环境配置基础路径
+  base: './',
 })

@@ -4,16 +4,45 @@
   "description": "iVedio Desktop App",
   "main": "dist/main/main.js",
   "scripts": {
-    "dev": "npm run build:main && electron .",
-    "build": "npm run build:main",
+    "dev": "npm run build:web && npm run build:main && electron .",
+    "build": "node scripts/build.js",
+    "build:web": "cd ../web && npm run build",
     "build:main": "tsc -p tsconfig.main.json",
     "start:electron": "electron .",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist && rimraf ../web/dist",
+    "pack": "npm run build && electron-builder",
+    "pack:win": "npm run build && electron-builder --win",
+    "pack:mac": "npm run build && electron-builder --mac",
+    "pack:linux": "npm run build && electron-builder --linux"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
     "electron": "^28.1.4",
+    "electron-builder": "^24.9.1",
     "rimraf": "^5.0.5",
     "typescript": "^5.3.3"
+  },
+  "build": {
+    "appId": "com.ivedio.desktop",
+    "productName": "iVedio",
+    "directories": {
+      "output": "dist-app"
+    },
+    "files": [
+      "dist/**/*",
+      "../web/dist/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png"
+    }
   }
 }
